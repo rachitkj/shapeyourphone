@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "name": "Focused workday",
+  "theme": {
+    "background": "wallpaper",
+    "dim": 0.35,
+    "foreground": "#FFFFFF",
+    "secondary": "#C8C8CC",
+    "accent": "#FFD60A",
+    "font": "medium",
+    "iconStyle": "mono",
+    "iconSize": 44
+  },
+  "home": [
+    {"type": "clock", "size": 56, "showDate": true, "align": "center"},
+    {"type": "calendar", "hours": 12, "align": "center"},
+    {"type": "spacer", "flex": 1},
+    {"type": "search", "hint": "Search apps"},
+    {"type": "spacer", "height": 16},
+    {"type": "apps", "style": "grid", "columns": 4, "labels": true,
+     "apps": ["com.google.android.gm", "com.google.android.calendar", "com.slack", "com.google.android.apps.docs"]}
+  ],
+  "dock": {"apps": ["@dialer", "@sms", "@browser", "@camera"]},
+  "drawer": {"style": "grid", "columns": 4, "showSearch": true, "searchOnly": ["com.instagram.android", "com.zhiliaoapp.musically"]},
+  "gestures": {"swipeUp": "drawer", "swipeDown": "notifications", "doubleTap": "none", "longPress": "homeSettings"},
+  "rules": [
+    {
+      "name": "Work hours",
+      "days": ["mon", "tue", "wed", "thu", "fri"],
+      "from": "09:00",
+      "to": "18:00",
+      "hide": ["com.instagram.android", "com.zhiliaoapp.musically", "com.google.android.youtube"]
+    },
+    {
+      "name": "Evening",
+      "from": "18:00",
+      "to": "23:00",
+      "set": {
+        "home": [
+          {"type": "clock", "size": 56, "showDate": true, "align": "center"},
+          {"type": "spacer", "flex": 1},
+          {"type": "apps", "style": "grid", "columns": 4, "labels": true,
+           "apps": ["com.spotify.music", "com.netflix.mediaclient", "com.whatsapp", "com.google.android.apps.photos"]}
+        ]
+      }
+    }
+  ]
+}

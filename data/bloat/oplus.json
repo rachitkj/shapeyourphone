@@ -1,0 +1,13 @@
+[
+  {"pkg": "com.nearme.statistics.rom", "name": "Usage statistics (older ColorOS)", "tier": "safe", "why": "Telemetry service.", "breaks": "Nothing visible."},
+  {"pkg": "com.oplus.statistics.rom", "name": "Usage statistics", "tier": "safe", "why": "Telemetry service.", "breaks": "Nothing visible."},
+  {"pkg": "com.heytap.pictorial", "name": "Lock screen magazine", "tier": "recommended", "why": "Rotating lock-screen wallpapers with promos.", "breaks": "Lock screen magazine."},
+  {"pkg": "com.heytap.market", "name": "App Market", "tier": "recommended", "why": "OEM app store that pushes promoted apps.", "breaks": "App Market (Play Store still works)."},
+  {"pkg": "com.oppo.market", "name": "App Market (older)", "tier": "recommended", "why": "OEM app store that pushes promoted apps.", "breaks": "App Market."},
+  {"pkg": "com.heytap.browser", "name": "OEM Browser", "tier": "optional", "why": "Browser with ads.", "breaks": "This browser (make sure another is installed)."},
+  {"pkg": "com.heytap.music", "name": "Music", "tier": "optional", "why": "Music player.", "breaks": "Music app."},
+  {"pkg": "com.heytap.cloud", "name": "Cloud", "tier": "optional", "why": "OEM cloud sync.", "breaks": "OEM cloud backup."},
+  {"pkg": "com.coloros.gamespaceui", "name": "Game Space", "tier": "optional", "why": "Game hub and overlay.", "breaks": "Game Space."},
+  {"pkg": "com.oplus.games", "name": "Games", "tier": "optional", "why": "Game hub and overlay.", "breaks": "Games app."},
+  {"pkg": "com.coloros.assistantscreen", "name": "Shelf", "tier": "optional", "why": "Swipe-down card panel.", "breaks": "Shelf panel."}
+]

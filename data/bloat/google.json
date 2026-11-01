@@ -1,0 +1,23 @@
+[
+  {"pkg": "com.google.android.feedback", "name": "Market Feedback Agent", "tier": "safe", "why": "Sends app crash reports to Google Play.", "breaks": "You can't send crash reports from the 'App stopped' dialog."},
+  {"pkg": "com.google.android.printservice.recommendation", "name": "Print service recommender", "tier": "safe", "why": "Suggests printer plugins to install.", "breaks": "No printer plugin suggestions. Printing still works with installed plugins."},
+  {"pkg": "com.google.android.videos", "name": "Google TV (Play Movies)", "tier": "recommended", "why": "Movie store most people never open.", "breaks": "Can't watch movies bought on Google Play on this phone."},
+  {"pkg": "com.google.android.apps.magazines", "name": "Google News", "tier": "recommended", "why": "News feed app.", "breaks": "Google News app."},
+  {"pkg": "com.google.android.apps.podcasts", "name": "Google Podcasts", "tier": "recommended", "why": "Discontinued podcast app still preinstalled on some phones.", "breaks": "Nothing — the service is shut down."},
+  {"pkg": "com.google.ar.core", "name": "Google Play Services for AR", "tier": "recommended", "why": "Augmented-reality support used by a few apps.", "breaks": "AR features in apps that use ARCore."},
+  {"pkg": "com.google.android.apps.tachyon", "name": "Google Meet (Duo)", "tier": "optional", "why": "Video calling app.", "breaks": "Meet/Duo calls."},
+  {"pkg": "com.google.android.apps.youtube.music", "name": "YouTube Music", "tier": "optional", "why": "Music streaming.", "breaks": "YouTube Music app."},
+  {"pkg": "com.google.android.youtube", "name": "YouTube", "tier": "optional", "why": "Video app.", "breaks": "YouTube app (the website still works)."},
+  {"pkg": "com.google.android.apps.subscriptions.red", "name": "Google One", "tier": "optional", "why": "Storage subscription and backup app.", "breaks": "Google One app and some backup options."},
+  {"pkg": "com.google.android.apps.docs", "name": "Google Drive", "tier": "optional", "why": "Cloud storage.", "breaks": "Drive app and opening Drive files from other apps."},
+  {"pkg": "com.google.android.apps.photos", "name": "Google Photos", "tier": "optional", "why": "Photo backup and gallery.", "breaks": "Photo backup. Make sure you have another gallery app."},
+  {"pkg": "com.google.android.apps.maps", "name": "Google Maps", "tier": "optional", "why": "Maps.", "breaks": "Maps and location links in other apps."},
+  {"pkg": "com.google.android.gm", "name": "Gmail", "tier": "optional", "why": "Email.", "breaks": "Gmail app."},
+  {"pkg": "com.google.ar.lens", "name": "Google Lens", "tier": "optional", "why": "Visual search.", "breaks": "Lens."},
+  {"pkg": "com.google.android.apps.bard", "name": "Gemini", "tier": "optional", "why": "Google's AI assistant app.", "breaks": "Gemini app and assistant."},
+  {"pkg": "com.google.android.apps.googleassistant", "name": "Google Assistant", "tier": "optional", "why": "Voice assistant shortcut app.", "breaks": "Assistant shortcut."},
+  {"pkg": "com.google.android.apps.wellbeing", "name": "Digital Wellbeing", "tier": "optional", "why": "Screen-time stats and focus mode.", "breaks": "Screen-time dashboard, Bedtime and Focus modes."},
+  {"pkg": "com.google.android.apps.turbo", "name": "Device Health Services", "tier": "optional", "why": "Battery-life predictions and adaptive battery.", "breaks": "Battery remaining-time estimates; adaptive battery may work worse."},
+  {"pkg": "com.google.android.projection.gearhead", "name": "Android Auto", "tier": "optional", "why": "Car integration.", "breaks": "Android Auto in your car."},
+  {"pkg": "com.android.chrome", "name": "Chrome", "tier": "optional", "why": "Browser.", "breaks": "Chrome. amos refuses this if Chrome is your WebView provider."}
+]

@@ -1,0 +1,51 @@
+{
+  "_comment": "Shared by tests/test_launcher_config.py and launcher/app/src/test (RulesVectorsTest). Both implementations must agree. day: 1=Mon..7=Sun.",
+  "active": [
+    {"rule": {"days": ["fri"], "from": "22:00", "to": "07:00"}, "day": 5, "time": "22:30", "active": true},
+    {"rule": {"days": ["fri"], "from": "22:00", "to": "07:00"}, "day": 6, "time": "06:59", "active": true},
+    {"rule": {"days": ["fri"], "from": "22:00", "to": "07:00"}, "day": 6, "time": "07:00", "active": false},
+    {"rule": {"days": ["fri"], "from": "22:00", "to": "07:00"}, "day": 5, "time": "06:00", "active": false},
+    {"rule": {"days": ["fri"], "from": "22:00", "to": "07:00"}, "day": 6, "time": "22:30", "active": false},
+    {"rule": {"days": ["sun"], "from": "23:00", "to": "01:00"}, "day": 1, "time": "00:30", "active": true},
+    {"rule": {"from": "09:00", "to": "17:00"}, "day": 3, "time": "12:00", "active": true},
+    {"rule": {"from": "09:00", "to": "17:00"}, "day": 3, "time": "17:00", "active": false},
+    {"rule": {"from": "09:00", "to": "17:00"}, "day": 3, "time": "08:59", "active": false},
+    {"rule": {"days": ["sat", "sun"]}, "day": 7, "time": "03:00", "active": true},
+    {"rule": {"days": ["sat", "sun"]}, "day": 1, "time": "03:00", "active": false},
+    {"rule": {"from": "08:00", "to": "08:00"}, "day": 2, "time": "01:00", "active": true},
+    {"rule": {}, "day": 4, "time": "13:13", "active": true}
+  ],
+  "merge": [
+    {
+      "name": "night rule hides apps and swaps theme",
+      "config": {
+        "version": 1,
+        "theme": {"background": "#101010", "foreground": "#FFFFFF"},
+        "dock": {"apps": ["com.a", "com.b"]},
+        "drawer": {"hidden": ["com.x"]},
+        "rules": [
+          {"name": "night", "from": "22:00", "to": "07:00", "hide": ["com.b", "com.c"], "set": {"theme": {"background": "#000000"}}},
+          {"name": "weekend", "days": ["sat", "sun"], "set": {"dock": {"apps": ["com.d"]}}}
+        ]
+      },
+      "day": 6, "time": "23:00",
+      "expect": {
+        "active": ["night", "weekend"],
+        "hidden": ["com.b", "com.c"],
+        "theme": {"background": "#000000", "foreground": "#FFFFFF"},
+        "dock_apps": ["com.d"]
+      }
+    },
+    {
+      "name": "no rule active leaves config untouched",
+      "config": {
+        "version": 1,
+        "theme": {"background": "#101010"},
+        "dock": {"apps": ["com.a"]},
+        "rules": [{"name": "night", "from": "22:00", "to": "07:00", "hide": ["com.a"]}]
+      },
+      "day": 2, "time": "12:00",
+      "expect": {"active": [], "hidden": [], "theme": {"background": "#101010"}, "dock_apps": ["com.a"]}
+    }
+  ]
+}

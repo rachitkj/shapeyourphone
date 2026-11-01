@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "name": "Default",
+  "theme": {
+    "background": "#0B0B0C",
+    "foreground": "#F2F2F2",
+    "secondary": "#8A8A8E",
+    "accent": "#7CC4FF",
+    "font": "sans",
+    "textSize": 18,
+    "iconStyle": "color",
+    "iconSize": 40,
+    "padding": 24
+  },
+  "home": [
+    {"type": "clock", "size": 64, "showDate": true, "align": "start"},
+    {"type": "spacer", "flex": 1},
+    {"type": "text", "text": "Swipe up for all apps", "size": 13, "color": "secondary", "align": "center"}
+  ],
+  "dock": {"apps": ["@dialer", "@sms", "@browser", "@camera"], "labels": false},
+  "drawer": {"style": "list", "showSearch": true, "autoLaunch": false, "hidden": [], "searchOnly": []},
+  "labels": {},
+  "gestures": {"swipeUp": "drawer", "swipeDown": "notifications", "doubleTap": "none", "longPress": "homeSettings"},
+  "rules": []
+}

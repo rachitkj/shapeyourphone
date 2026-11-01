@@ -1,0 +1,13 @@
+[
+  {"pkg": "com.vivo.hiboard", "name": "Jovi Home (vivo)", "tier": "recommended", "why": "Feed panel left of the home screen.", "breaks": "The feed panel."},
+  {"pkg": "com.vivo.appstore", "name": "V-Appstore (vivo)", "tier": "recommended", "why": "OEM app store that pushes promoted apps.", "breaks": "V-Appstore (Play Store still works)."},
+  {"pkg": "com.vivo.browser", "name": "vivo Browser", "tier": "optional", "why": "Browser with ads.", "breaks": "vivo Browser."},
+  {"pkg": "com.vivo.assistant", "name": "Jovi Smart Scene (vivo)", "tier": "optional", "why": "Assistant cards.", "breaks": "Jovi cards."},
+  {"pkg": "com.vivo.easyshare", "name": "EasyShare (vivo)", "tier": "optional", "why": "Phone transfer app.", "breaks": "EasyShare."},
+  {"pkg": "com.motorola.ccc.notification", "name": "Moto notifications", "tier": "recommended", "why": "Promotional notifications from Motorola.", "breaks": "Motorola promo notifications."},
+  {"pkg": "com.motorola.moto", "name": "Moto app", "tier": "optional", "why": "Moto gestures and display settings app.", "breaks": "Moto Actions/Display settings (chop for flashlight, etc.)."},
+  {"pkg": "com.motorola.gamemode", "name": "Moto Gametime", "tier": "optional", "why": "Game overlay.", "breaks": "Gametime."},
+  {"pkg": "com.tmobile.pr.adapt", "name": "T-Mobile diagnostics", "tier": "safe", "why": "Carrier diagnostics collection.", "breaks": "Nothing visible."},
+  {"pkg": "com.tmobile.pr.mytmobile", "name": "T-Life / T-Mobile", "tier": "optional", "why": "Carrier account app.", "breaks": "The carrier app."},
+  {"pkg": "com.att.myWireless", "name": "myAT&T", "tier": "optional", "why": "Carrier account app.", "breaks": "The carrier app."}
+]
