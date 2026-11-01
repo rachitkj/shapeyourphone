@@ -245,6 +245,10 @@ def handle(msg: dict) -> Optional[dict]:
 
 
 def main() -> None:
+    # MCP messages are UTF-8 regardless of the OS console encoding
+    for stream in (sys.stdin, sys.stdout):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", newline="\n" if stream is sys.stdout else None)
     print("shapeyourphone MCP server %s on stdio" % __version__, file=sys.stderr)
     for line in sys.stdin:
         line = line.strip()

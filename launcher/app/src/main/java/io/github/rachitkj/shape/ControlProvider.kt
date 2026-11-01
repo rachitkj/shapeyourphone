@@ -1,11 +1,14 @@
 package io.github.rachitkj.shape
 
+import android.app.AppOpsManager
+import android.app.usage.UsageStatsManager
 import android.content.ContentProvider
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.net.Uri
 import android.os.Binder
+import android.os.Build
 import android.os.Bundle
 import android.os.Process
 import android.util.Base64
@@ -45,6 +48,7 @@ class ControlProvider : ContentProvider() {
                     putString("data_b64", b64(Rules.effective(ConfigParser.parseRoot(ConfigStore.read(ctx)), d, m).config.toString(2)))
                 }
                 "list_apps" -> ok().apply { putString("data_b64", b64(appsJson(ctx))) }
+                "usage" -> ok().apply { putString("data_b64", b64(usageJson(ctx, arg?.toIntOrNull() ?: 30))) }
                 "stage_begin" -> {
                     synchronized(stage) { stage.setLength(0) }
                     ok()
@@ -93,6 +97,35 @@ class ControlProvider : ContentProvider() {
             arr.put(JSONObject().put("package", a.pkg).put("activity", a.component.className).put("label", a.label))
         }
         return arr.toString()
+    }
+
+    /** Foreground time per launchable app over the last [days]. Needs usage access (an appop the owner grants). */
+    private fun usageJson(ctx: Context, days: Int): String {
+        if (!hasUsageAccess(ctx)) throw IllegalStateException("usage access not granted — run: shape launcher usage-access")
+        val usm = ctx.getSystemService(UsageStatsManager::class.java)
+        val end = System.currentTimeMillis()
+        val stats = usm.queryAndAggregateUsageStats(end - days.coerceIn(1, 365) * 86_400_000L, end)
+        val arr = JSONArray()
+        for (a in AppRepository(ctx).load().distinctBy { it.pkg }) {
+            val s = stats[a.pkg]
+            arr.put(
+                JSONObject().put("package", a.pkg).put("label", a.label)
+                    .put("foreground_ms", s?.totalTimeInForeground ?: 0L)
+                    .put("last_used", s?.lastTimeUsed ?: 0L),
+            )
+        }
+        return arr.toString()
+    }
+
+    private fun hasUsageAccess(ctx: Context): Boolean {
+        val aom = ctx.getSystemService(AppOpsManager::class.java)
+        val mode = if (Build.VERSION.SDK_INT >= 29) {
+            aom.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), ctx.packageName)
+        } else {
+            @Suppress("DEPRECATION")
+            aom.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), ctx.packageName)
+        }
+        return mode == AppOpsManager.MODE_ALLOWED
     }
 
     private fun versionName(ctx: Context): String = try {

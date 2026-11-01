@@ -52,6 +52,8 @@ class HomeActivity : Activity() {
     private lateinit var widgets: LinearLayout
     private lateinit var dock: LinearLayout
     private lateinit var drawer: DrawerView
+    private lateinit var pause: PauseView
+    private var pausePkgs: Set<String> = emptySet()
     private lateinit var flings: GestureDetector
     private lateinit var taps: GestureDetector
 
@@ -87,6 +89,8 @@ class HomeActivity : Activity() {
         drawer = DrawerView(this, apps, ::launch, ::appInfo)
         root.addView(home, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
         root.addView(drawer, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
+        pause = PauseView(this)
+        root.addView(pause, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
         setContentView(root)
 
         root.setOnApplyWindowInsetsListener { _, wi ->
@@ -153,25 +157,25 @@ class HomeActivity : Activity() {
             unregisterReceiver(tick)
             tickRegistered = false
         }
-        closeDrawer()
+        closeOverlays()
         super.onStop()
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         // Pressing Home while already home: close the drawer.
-        if (intent.hasCategory(Intent.CATEGORY_HOME)) closeDrawer()
+        if (intent.hasCategory(Intent.CATEGORY_HOME)) closeOverlays()
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-        if (!drawer.isOpen) flings.onTouchEvent(ev)
+        if (!drawer.isOpen && !pause.isOpen) flings.onTouchEvent(ev)
         return super.dispatchTouchEvent(ev)
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         // API 33+ uses OnBackInvokedCallback (registered while the drawer is open).
         if (Build.VERSION.SDK_INT < 33 && event.keyCode == KeyEvent.KEYCODE_BACK) {
-            if (event.action == KeyEvent.ACTION_UP && drawer.isOpen) closeDrawer()
+            if (event.action == KeyEvent.ACTION_UP) onBack()
             return true // the home screen never "goes back"
         }
         return super.dispatchKeyEvent(event)
@@ -199,7 +203,11 @@ class HomeActivity : Activity() {
         } catch (_: Exception) {
             return
         }
-        if (key != activeKey) reload()
+        if (key != activeKey) {
+            reload()
+        } else if (minute % 5 == 0 && config?.home?.any { it is Widget.Calendar } == true) {
+            render() // keep "next event" current while the home screen stays open
+        }
     }
 
     // -- rendering -------------------------------------------------------------
@@ -212,6 +220,7 @@ class HomeActivity : Activity() {
         widgets.removeAllViews()
         for (w in c.home) build(w, c)?.let { (v, lp) -> widgets.addView(v, lp) }
         buildDock(c)
+        pausePkgs = c.pause.apps.mapNotNull { apps.resolve(it, allApps)?.pkg }.toSet()
         drawer.bind(c, allApps)
         applyPadding()
     }
@@ -221,6 +230,7 @@ class HomeActivity : Activity() {
         val (l, t, r, b) = insets.toList()
         home.setPadding(l + pad, t + pad, r + pad, b + dp(12))
         drawer.setInsets(l, t, r, b)
+        pause.setInsets(l, t, r, b)
     }
 
     private fun wrap() = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
@@ -382,6 +392,18 @@ class HomeActivity : Activity() {
     }
 
     private fun launch(e: AppEntry, from: View) {
+        val c = config
+        if (c != null && e.pkg in pausePkgs && !pause.isOpen) {
+            pause.show(c.theme, label(e, c), c.pause.seconds, c.pause.message,
+                open = { closeOverlays(); start(e, from) },
+                dismiss = { closeOverlays() })
+            updateBackCallback()
+            return
+        }
+        start(e, from)
+    }
+
+    private fun start(e: AppEntry, from: View) {
         try {
             val loc = IntArray(2).also { from.getLocationOnScreen(it) }
             val bounds = Rect(loc[0], loc[1], loc[0] + from.width, loc[1] + from.height)
@@ -417,16 +439,32 @@ class HomeActivity : Activity() {
 
     private fun openDrawer(focusSearch: Boolean) {
         drawer.open(focusSearch)
-        if (Build.VERSION.SDK_INT >= 33 && backCallback == null) {
-            val cb = OnBackInvokedCallback { closeDrawer() }
-            onBackInvokedDispatcher.registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, cb)
-            backCallback = cb
-        }
+        updateBackCallback()
     }
 
-    private fun closeDrawer() {
+    /** Back closes the top overlay: the pause screen, then the drawer. The home screen itself never goes back. */
+    private fun onBack() {
+        when {
+            pause.isOpen -> pause.hide()
+            drawer.isOpen -> drawer.close()
+        }
+        updateBackCallback()
+    }
+
+    private fun closeOverlays() {
+        if (pause.isOpen) pause.hide()
         if (drawer.isOpen) drawer.close()
-        if (Build.VERSION.SDK_INT >= 33) {
+        updateBackCallback()
+    }
+
+    private fun updateBackCallback() {
+        if (Build.VERSION.SDK_INT < 33) return
+        val want = drawer.isOpen || pause.isOpen
+        if (want && backCallback == null) {
+            val cb = OnBackInvokedCallback { onBack() }
+            onBackInvokedDispatcher.registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, cb)
+            backCallback = cb
+        } else if (!want && backCallback != null) {
             (backCallback as? OnBackInvokedCallback)?.let { onBackInvokedDispatcher.unregisterOnBackInvokedCallback(it) }
             backCallback = null
         }

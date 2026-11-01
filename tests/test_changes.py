@@ -1,3 +1,4 @@
+import shutil
 import subprocess
 import unittest
 
@@ -111,8 +112,9 @@ class ChangeRoundTrips(PhoneTest):
         i_pkg = script.index("pm enable")
         self.assertLess(i_setting, i_pkg, "newest change must be undone first")
         # every undo line must be valid sh (host-side quoting)
-        r = subprocess.run(["sh", "-n"], input=script.encode(), capture_output=True)
-        self.assertEqual(r.returncode, 0, r.stderr)
+        if shutil.which("sh"):
+            r = subprocess.run(["sh", "-n"], input=script.encode(), capture_output=True)
+            self.assertEqual(r.returncode, 0, r.stderr)
 
     def test_change_log_persists(self):
         log = ch.ChangeLog(self.ps)

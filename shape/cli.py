@@ -980,7 +980,18 @@ def run() -> None:
     sys.exit(main())
 
 
+def _utf8_console() -> None:
+    """Windows consoles/pipes default to cp1252, which can't print → or ✓. Never crash on output."""
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure") and (getattr(stream, "encoding", "") or "").lower().replace("-", "") != "utf8":
+            try:
+                stream.reconfigure(encoding="utf-8", errors="replace")
+            except (ValueError, OSError):
+                pass
+
+
 def main(argv: Optional[List[str]] = None) -> int:
+    _utf8_console()
     args = build_parser().parse_args(argv)
     try:
         return args.fn(args) or 0

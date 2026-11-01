@@ -23,6 +23,7 @@
   "dock": {"apps": ["@dialer", "@sms", "@browser", "@camera"]},
   "drawer": {"style": "grid", "columns": 4, "showSearch": true, "searchOnly": ["com.instagram.android", "com.zhiliaoapp.musically"]},
   "gestures": {"swipeUp": "drawer", "swipeDown": "notifications", "doubleTap": "none", "longPress": "homeSettings"},
+  "pause": {"apps": ["com.instagram.android", "com.zhiliaoapp.musically"], "seconds": 8, "message": "Is this what you came for?"},
   "rules": [
     {
       "name": "Work hours",

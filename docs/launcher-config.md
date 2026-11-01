@@ -21,6 +21,7 @@ Examples: [`config/default.json`](../config/default.json) and
 | `drawer` | object | see below | Full app list (swipe up). |
 | `labels` | `{package: "Name"}` | `{}` | Rename apps everywhere. |
 | `gestures` | object | see below | |
+| `pause` | object | none | A "still want this?" screen before opening some apps. |
 | `rules` | list | `[]` | Time-based changes. |
 
 ## App references
@@ -78,6 +79,37 @@ Keys: `swipeUp`, `swipeDown`, `doubleTap`, `longPress`.
 Actions: `drawer`, `search`, `notifications`, `quickSettings`,
 `homeSettings`, `none`, or `app:<package>`.
 Defaults: swipe up opens the drawer, swipe down opens notifications, long press opens home settings.
+
+## `pause`
+```json
+"pause": {"apps": ["com.instagram.android"], "seconds": 8, "message": "Is this what you came for?"}
+```
+Opening one of these apps from the home screen, dock, drawer, search or a
+gesture first shows a calm full-screen message and a countdown. When it reaches
+zero the owner can tap **Open**. It never opens the app by itself, and **Not
+now** or Back cancels. `seconds` is 1–60 (default 5). Rules can change `pause`
+too, e.g. a longer pause in the evening.
+
+Quick edit: `shape launcher pause Instagram --seconds 10`.
+
+## Quick edits from the command line
+You rarely need to write JSON by hand. These commands pull the config from the
+phone, change one thing, show a before/after diff, and push it once approved.
+Apps can be given by the name the owner uses:
+
+```
+shape launcher hide Instagram TikTok --days weekdays --from 09:00 --to 18:00
+shape launcher unhide Instagram
+shape launcher search-only YouTube
+shape launcher dock Phone WhatsApp Chrome Camera
+shape launcher home-apps Maps Spotify --style grid
+shape launcher theme --background wallpaper --dim 0.4 --icons mono --font light
+shape launcher gesture doubleTap Spotify
+shape launcher rename WhatsApp Chats
+shape launcher pause Instagram --seconds 10
+shape launcher rules            # list (● = active now)
+shape launcher rule-remove "Weekdays 09:00–18:00"
+```
 
 ## `rules`
 ```json

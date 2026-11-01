@@ -47,6 +47,18 @@ class ConfigParserTest {
     }
 
     @Test
+    fun pauseSection() {
+        val c = ConfigParser.parse(configDir.resolve("examples/focus-workday.json").readText(), 2, 12 * 60)
+        assertEquals(listOf("com.instagram.android", "com.zhiliaoapp.musically"), c.pause.apps)
+        assertEquals(8, c.pause.seconds)
+        assertEquals("Is this what you came for?", c.pause.message)
+        val d = ConfigParser.parse("""{"version":1,"pause":{"apps":["a.b"],"seconds":999}}""", 1, 0)
+        assertEquals(60, d.pause.seconds) // clamped
+        assertEquals("Take a breath.", d.pause.message)
+        assertEquals(emptyList<String>(), ConfigParser.parse("""{"version":1}""", 1, 0).pause.apps)
+    }
+
+    @Test
     fun lenientParsing() {
         val c = ConfigParser.parse(
             """{"version":1,"theme":{"background":"nope","iconStyle":"neon","textSize":500},

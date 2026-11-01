@@ -8,12 +8,10 @@ import android.content.pm.LauncherApps
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Rect
 import android.graphics.drawable.AdaptiveIconDrawable
-import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
@@ -110,14 +108,22 @@ class AppRepository(private val context: Context) {
         } catch (_: Exception) {
             return null
         }
-        val d: Drawable = when (style) {
-            IconStyle.MONO -> monochrome(base, tint) ?: grayscale(base)
-            IconStyle.GRAYSCALE -> grayscale(base)
-            else -> base
-        }
         val bmp = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
-        d.setBounds(0, 0, sizePx, sizePx)
-        d.draw(Canvas(bmp))
+        val canvas = Canvas(bmp)
+        val mono = if (style == IconStyle.MONO) monochromeLayer(base) else null
+        if (mono != null) {
+            // Draw the glyph layer on its own. Wrapping it in a new AdaptiveIconDrawable would paint
+            // the layers onto black first (that's how adaptive icons render), giving dark discs.
+            // Adaptive layers are 108dp with the visible 72dp in the middle: scale by 1.5, offset by -0.25.
+            val pad = sizePx / 4
+            mono.mutate().setTint(tint)
+            mono.setBounds(-pad, -pad, sizePx + pad, sizePx + pad)
+            mono.draw(canvas)
+        } else {
+            val d = if (style == IconStyle.MONO || style == IconStyle.GRAYSCALE) grayscale(base) else base
+            d.setBounds(0, 0, sizePx, sizePx)
+            d.draw(canvas)
+        }
         icons.put(key, bmp)
         return bmp
     }
@@ -125,11 +131,9 @@ class AppRepository(private val context: Context) {
     private fun grayscale(d: Drawable): Drawable =
         d.mutate().apply { colorFilter = ColorMatrixColorFilter(ColorMatrix().apply { setSaturation(0f) }) }
 
-    private fun monochrome(d: Drawable, tint: Int): Drawable? {
+    private fun monochromeLayer(d: Drawable): Drawable? {
         if (Build.VERSION.SDK_INT < 33) return null
         if (d !is AdaptiveIconDrawable) return null
-        val mono = d.monochrome ?: return null
-        mono.mutate().setTint(tint)
-        return AdaptiveIconDrawable(ColorDrawable(Color.TRANSPARENT), mono)
+        return d.monochrome
     }
 }

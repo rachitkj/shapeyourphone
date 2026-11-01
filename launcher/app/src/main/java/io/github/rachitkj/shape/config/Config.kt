@@ -57,6 +57,9 @@ data class Drawer(
 
 data class Gestures(val swipeUp: String, val swipeDown: String, val doubleTap: String, val longPress: String)
 
+/** A short "still want this?" screen before opening the listed apps. */
+data class Pause(val apps: List<String>, val seconds: Int, val message: String)
+
 data class Config(
     val name: String,
     val theme: Theme,
@@ -65,6 +68,7 @@ data class Config(
     val drawer: Drawer,
     val labels: Map<String, String>,
     val gestures: Gestures,
+    val pause: Pause,
     /** Hidden everywhere right now: drawer.hidden plus every active rule's `hide`. */
     val hidden: Set<String>,
     val activeRules: List<String>,
@@ -141,7 +145,14 @@ object ConfigParser {
             longPress = g.optString("longPress", "homeSettings"),
         )
 
-        return Config(o.optString("name", ""), theme, home, dock, drawer, labels, gestures, hidden.toSet(), active)
+        val p = o.optJSONObject("pause") ?: JSONObject()
+        val pause = Pause(
+            apps = p.optJSONArray("apps")?.strings() ?: emptyList(),
+            seconds = p.optInt("seconds", 5).coerceIn(1, 60),
+            message = p.optString("message").ifBlank { "Take a breath." },
+        )
+
+        return Config(o.optString("name", ""), theme, home, dock, drawer, labels, gestures, pause, hidden.toSet(), active)
     }
 
     private fun widget(w: JSONObject): Widget? {

@@ -60,10 +60,35 @@ def home():
     time.sleep(1.5)
 
 
+def swipe_up():
+    size = sh("wm size").split()[-1]  # "Physical size: 1080x2400"
+    w, h = (int(x) for x in size.split("x"))
+    sh("input swipe %d %d %d %d 150" % (w // 2, h * 3 // 4, w // 2, h // 4))
+
+
+def resumed_activity():
+    out = sh("dumpsys activity activities")
+    for line in out.splitlines():
+        if "mResumedActivity" in line or "topResumedActivity" in line or "ResumedActivity:" in line:
+            return line.strip()
+    return ""
+
+
+def home_component():
+    lines = sh("cmd package resolve-activity --brief -a android.intent.action.MAIN -c android.intent.category.HOME").splitlines()
+    return lines[-1].strip() if lines else ""
+
+
+def pull():
+    return json.loads(shape("launcher", "pull").stdout)
+
+
 def main():
+    sdk = int(sh("getprop ro.build.version.sdk") or 0)
+    print("Android SDK", sdk)
     shape("doctor", ok=False)
     shape("init")
-    stock_home = sh("cmd package resolve-activity --brief -a android.intent.action.MAIN -c android.intent.category.HOME").splitlines()[-1]
+    stock_home = home_component()
     print("stock home:", stock_home)
 
     # -- scan / privacy produce JSON on real output
@@ -103,27 +128,61 @@ def main():
     check(any(a["package"] == "com.android.settings" for a in apps), "list_apps returns labelled apps (%d)" % len(apps))
 
     shape("launcher", "push", str(ROOT / "config/examples/minimal-text.json"), "--yes")
-    pulled = json.loads(shape("launcher", "pull").stdout)
-    check(pulled.get("name") == "Minimal text", "pushed config is what the phone has")
+    check(pull().get("name") == "Minimal text", "pushed config is what the phone has")
     home()
     screenshot("2-minimal-text")
 
     shape("launcher", "push", str(ROOT / "config/examples/focus-workday.json"), "--yes")
     home()
     screenshot("3-focus-workday")
-    size = sh("wm size").split()[-1]  # "Physical size: 1080x2400"
-    w, h = (int(x) for x in size.split("x"))
-    sh("input swipe %d %d %d %d 150" % (w // 2, h * 3 // 4, w // 2, h // 4))  # swipe up -> drawer
+    swipe_up()
     screenshot("4-drawer")
     home()
 
     shape("launcher", "rollback")
-    check(json.loads(shape("launcher", "pull").stdout).get("name") == "Minimal text", "rollback restored the previous config")
+    check(pull().get("name") == "Minimal text", "rollback restored the previous config")
+
+    # -- name-based edits on real app labels
+    shape("launcher", "dock", "Settings", "--yes")
+    check(pull()["dock"]["apps"] == ["com.android.settings"], "dock edit by app name")
+    shape("launcher", "hide", "Settings", "--from", "00:00", "--to", "23:59", "--name", "AllDay", "--yes")
+    check("AllDay" in json.loads(shape("launcher", "status").stdout)["active_rules"], "time rule is active on the phone")
+    shape("launcher", "unhide", "Settings", "--yes")
+    check(pull().get("rules") == [], "unhide removed the rule")
+    shape("launcher", "theme", "--icons", "mono", "--yes")
+    shape("launcher", "home-apps", "Settings", "Contacts", "--style", "grid", "--yes", ok=False)
+    home()
+    screenshot("5-mono-icons")
+
+    # -- pause screen: swipe up opens Settings via a gesture, but the pause must come first
+    shape("launcher", "gesture", "swipeUp", "Settings", "--yes")
+    shape("launcher", "pause", "Settings", "--seconds", "30", "--yes")
+    home()
+    swipe_up()
+    time.sleep(1.5)
+    screenshot("6-pause")
+    top = resumed_activity()
+    check(LAUNCHER in top and "com.android.settings" not in top, "pause screen held Settings back (%s)" % top[-80:])
+    sh("input keyevent KEYCODE_BACK")
+    time.sleep(1)
+    check("com.android.settings" not in resumed_activity(), "back dismissed the pause without opening the app")
+
+    # -- usage access + suggestions (real UsageStatsManager)
+    shape("launcher", "usage-access", "--yes")
+    sug = shape("suggest", "--json", ok=False)
+    check(sug.returncode == 0, "suggest works with usage access")
+    if sug.returncode == 0:
+        res = json.loads(sug.stdout)
+        check(set(res) == {"put_in_reach", "heavy_use", "unused"}, "suggest returns all sections")
+
+    rep = shape("report", "--share")
+    check("Device report" in rep.stdout and ENV["SHAPE_HOME"] not in rep.stdout, "share report is generated and anonymous")
     shape("launcher", "history")
+    shape("phones")
 
     # -- full restore: home back to stock, launcher removed, settings back
     shape("restore", "--yes")
-    now_home = sh("cmd package resolve-activity --brief -a android.intent.action.MAIN -c android.intent.category.HOME").splitlines()[-1]
+    now_home = home_component()
     check(not now_home.startswith(LAUNCHER), "home handed back (%s)" % now_home)
     check(sh("pm path %s" % LAUNCHER) == "", "launcher uninstalled by restore")
     check(sh("settings get global animator_duration_scale") == anim_before, "animator scale restored to %s" % anim_before)

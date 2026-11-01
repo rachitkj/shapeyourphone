@@ -3,4 +3,7 @@
     <string name="app_name">Shape</string>
     <string name="search_hint">Search apps</string>
     <string name="no_results">No apps match</string>
+    <string name="pause_opening">Opening %1$s</string>
+    <string name="pause_open">Open %1$s</string>
+    <string name="pause_not_now">Not now</string>
 </resources>
