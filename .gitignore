@@ -25,3 +25,7 @@ captures/
 
 # e2e emulator screenshots
 /e2e-artifacts/
+
+# Python packaging
+*.egg-info/
+/dist/
