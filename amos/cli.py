@@ -227,8 +227,8 @@ def cmd_apply(args) -> int:
 def _run_actions(args, actions: List[dict], source: str) -> int:
     dev = get_dev(args)
     ps = ensure_init(dev)
-    for a in actions:
-        print("  %s" % a.get("why", a))
+    for why in dict.fromkeys(a.get("why") or str(a) for a in actions):
+        print("  %s" % why)
     if not confirm("Apply?", args.yes):
         return 2
     summary = plans.apply_plan(dev, ps, {"actions": actions}, source)

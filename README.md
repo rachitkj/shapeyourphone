@@ -8,9 +8,14 @@ phone. It cleans out bloat, tightens privacy, tunes settings, and designs your
 home screen. It remembers what you asked for, so the next request builds on the
 last one instead of starting over.
 
-> **Status: v0.1, not yet tested on a real phone.** The Python toolkit is
-> tested against a simulated phone, and the launcher is built, linted and
-> unit-tested in CI. Real-device reports are very welcome. See CONTRIBUTING.
+> **Status: v0.1.** Every CI run drives the real CLI over adb against an
+> Android 14 emulator: install, set home, push/rollback configs, debloat, undo,
+> full restore. It has **not been tested on physical phones yet**, and OEM skins
+> differ, so real-device reports are very welcome. See CONTRIBUTING.
+
+| Default | Minimal text | Wallpaper + evening rule | Drawer |
+|---|---|---|---|
+| ![](docs/screenshots/default.png) | ![](docs/screenshots/minimal-text.png) | ![](docs/screenshots/focus-evening.png) | ![](docs/screenshots/drawer.png) |
 
 ## How to use it
 1. Install adb (`brew install android-platform-tools`, `winget install Google.PlatformTools`, or `apt install adb`) and Python 3.9+.

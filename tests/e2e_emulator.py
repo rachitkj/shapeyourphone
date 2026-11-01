@@ -87,6 +87,7 @@ def main():
     check("package:com.android.systemui" not in sh("pm list packages -d").split(), "systemui untouched")
 
     # -- a tweak, read back raw
+    anim_before = sh("settings get global animator_duration_scale")
     amos("tweak", "animations", "0.5", "--yes")
     check(sh("settings get global animator_duration_scale") == "0.5", "animator scale is 0.5")
 
@@ -125,7 +126,7 @@ def main():
     now_home = sh("cmd package resolve-activity --brief -a android.intent.action.MAIN -c android.intent.category.HOME").splitlines()[-1]
     check(not now_home.startswith(LAUNCHER), "home handed back (%s)" % now_home)
     check(sh("pm path %s" % LAUNCHER) == "", "launcher uninstalled by restore")
-    check(sh("settings get global animator_duration_scale") in ("1.0", "1", "null"), "animator scale restored")
+    check(sh("settings get global animator_duration_scale") == anim_before, "animator scale restored to %s" % anim_before)
     amos("drift")
     amos("changes", "--all")
 

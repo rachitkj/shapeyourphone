@@ -80,7 +80,7 @@ class DrawerView(
         cfg = config
         all = entries
         val t = config.theme
-        setBackgroundColor(t.background ?: 0xEE000000.toInt())
+        setBackgroundColor(t.background ?: 0xFA0A0A0C.toInt())
         search.visibility = if (config.drawer.showSearch) View.VISIBLE else View.GONE
         search.setTextColor(t.foreground)
         search.setHintTextColor(t.secondary)
