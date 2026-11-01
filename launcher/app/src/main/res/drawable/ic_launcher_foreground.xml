@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A rounded phone outline with three stacked lines: a home screen built from a list. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#F2F2F2"
+        android:strokeWidth="4"
+        android:pathData="M44,32 L64,32 A6,6 0 0 1 70,38 L70,70 A6,6 0 0 1 64,76 L44,76 A6,6 0 0 1 38,70 L38,38 A6,6 0 0 1 44,32 Z" />
+    <path
+        android:fillColor="#7CC4FF"
+        android:pathData="M45,44 L63,44 L63,48 L45,48 Z M45,52 L59,52 L59,56 L45,56 Z M45,60 L55,60 L55,64 L45,64 Z" />
+</vector>

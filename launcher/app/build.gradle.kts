@@ -1,0 +1,71 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+}
+
+// Release signing comes from the environment (CI secrets); see scripts/make-release-key.sh.
+val keystorePath: String? = System.getenv("AMOS_KEYSTORE")
+
+android {
+    namespace = "io.github.rachitkj.amos"
+    compileSdk = 35
+
+    defaultConfig {
+        applicationId = "io.github.rachitkj.amos"
+        minSdk = 26
+        targetSdk = 35
+        versionCode = 1
+        versionName = "0.1.0"
+    }
+
+    signingConfigs {
+        if (keystorePath != null) {
+            create("release") {
+                storeFile = file(keystorePath)
+                storePassword = System.getenv("AMOS_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("AMOS_KEY_ALIAS")
+                keyPassword = System.getenv("AMOS_KEY_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            if (keystorePath != null) signingConfig = signingConfigs.getByName("release")
+        }
+    }
+
+    // config/default.json (shared with the Python toolkit) is the built-in home screen.
+    sourceSets.getByName("main").assets.srcDir("../../config")
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    lint {
+        abortOnError = true
+        warningsAsErrors = false
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
+    }
+}
+
+tasks.withType<Test>().configureEach {
+    // Rule vectors shared with tests/test_launcher_config.py
+    systemProperty("amos.vectors", rootProject.file("../tests/vectors/rules.json").absolutePath)
+}
+
+dependencies {
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.json:json:20240303")
+}
