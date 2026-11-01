@@ -54,6 +54,7 @@ class Protocol(unittest.TestCase):
             {"jsonrpc": "2.0", "id": 2, "method": "tools/list"},
         ]
         p = subprocess.run([sys.executable, "-m", "shape.mcp"], cwd=ROOT, capture_output=True, text=True, timeout=60,
+                           encoding="utf-8",  # MCP is UTF-8 on every OS; Windows would default to cp1252
                            input="\n".join(json.dumps(m) for m in msgs) + "\nnot json\n")
         lines = [json.loads(l) for l in p.stdout.splitlines()]
         self.assertEqual([l.get("id") for l in lines], [1, 2, None])

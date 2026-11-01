@@ -26,6 +26,21 @@ class LauncherFlow(PhoneTest):
         self.assertNotIn(LAUNCHER_PACKAGE, self.phone.pkgs)
         self.assertEqual(self.phone.home.split("/")[0], stock.split("/")[0])
 
+    def test_home_change_that_lands_late_still_counts(self):
+        # Android 14 applies the home role asynchronously: the first read still shows the old launcher
+        real = self.phone._cmd_package
+        reads = {"n": 0}
+
+        def lagging(c):
+            if c[2] == "resolve-activity" and "android.intent.category.HOME" in c and reads["n"] < 2:
+                reads["n"] += 1
+                return "priority=0\ncom.sec.android.app.launcher/com.sec.android.app.launcher.activities.LauncherActivity"
+            return real(c)
+        self.phone._cmd_package = lagging
+        self.install()
+        self.assertTrue(lz.status(self.dev)["is_default_home"])
+        self.assertEqual(ch.ChangeLog(self.ps).applied()[-1].kind, "home")
+
     def test_push_history_and_rollback(self):
         self.install()
         a = json.loads((ROOT / "config" / "default.json").read_text())

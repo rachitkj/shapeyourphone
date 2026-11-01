@@ -29,6 +29,8 @@ jobs:
         shell: bash
         run: for f in config/default.json config/examples/*.json; do python -m shape launcher validate "$f"; done
       - name: Install like a user would (pipx) and smoke-test
+        # the runner's shared pipx venv needs Python 3.10+; 3.9 still runs the full test suite above
+        if: matrix.python != '3.9'
         shell: bash
         run: |
           python -m pip install --quiet pipx

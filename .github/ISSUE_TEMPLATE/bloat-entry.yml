@@ -1,0 +1,42 @@
+name: Bloat list entry
+description: Suggest a preinstalled package to add (or fix) in the bloat lists.
+title: "[bloat] <package>"
+labels: ["bloat-list"]
+body:
+  - type: input
+    id: pkg
+    attributes:
+      label: Package name
+      placeholder: com.example.preinstalled
+    validations:
+      required: true
+  - type: input
+    id: name
+    attributes:
+      label: What it's called on the phone
+    validations:
+      required: true
+  - type: dropdown
+    id: tier
+    attributes:
+      label: Suggested tier
+      options:
+        - safe — ads/telemetry/installers, nothing visible is lost
+        - recommended — duplicate or promo app most people never open
+        - optional — a real app some people use
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why remove it, and what stops working without it?
+      description: Be honest about what breaks. "Nothing I noticed after a week" is useful.
+    validations:
+      required: true
+  - type: input
+    id: tested
+    attributes:
+      label: Tested on (model, Android version, skin)
+      placeholder: Samsung Galaxy A54, Android 14, One UI 6.1
+    validations:
+      required: true

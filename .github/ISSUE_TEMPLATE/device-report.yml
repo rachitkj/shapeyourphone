@@ -1,0 +1,49 @@
+name: Device report
+description: Tell us how shapeyourphone worked on your phone — success reports help as much as bug reports.
+title: "[device] <brand> <model>, Android <version>"
+labels: ["device-report"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for trying shapeyourphone on a real phone! The quickest way to fill this in:
+        run `python3 -m shape report --share` and paste the output below. It contains no serial
+        numbers, account info, or your personal app list.
+  - type: textarea
+    id: report
+    attributes:
+      label: Output of `shape report --share`
+      render: markdown
+    validations:
+      required: true
+  - type: dropdown
+    id: overall
+    attributes:
+      label: Overall
+      options:
+        - Everything I tried worked
+        - Mostly worked, some problems (details below)
+        - Something went wrong (details below)
+    validations:
+      required: true
+  - type: checkboxes
+    id: tried
+    attributes:
+      label: What did you try?
+      options:
+        - label: Debloat (scan / plan / apply)
+        - label: Tweaks (animations, dark mode, Private DNS, …)
+        - label: Shape launcher as home screen
+        - label: Time rules / pause screen
+        - label: Undo / restore
+        - label: Clone to another phone
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: What happened, what you expected, any command output. Screenshots welcome.
+  - type: input
+    id: agent
+    attributes:
+      label: Which agent did you use?
+      placeholder: Claude Code / Claude Desktop (MCP) / Codex / Gemini CLI / by hand

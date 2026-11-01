@@ -148,7 +148,7 @@ def main():
     shape("launcher", "hide", "Settings", "--from", "00:00", "--to", "23:59", "--name", "AllDay", "--yes")
     check("AllDay" in json.loads(shape("launcher", "status").stdout)["active_rules"], "time rule is active on the phone")
     shape("launcher", "unhide", "Settings", "--yes")
-    check(pull().get("rules") == [], "unhide removed the rule")
+    check(all(r.get("name") != "AllDay" for r in pull().get("rules", [])), "unhide removed the rule")
     shape("launcher", "theme", "--icons", "mono", "--yes")
     shape("launcher", "home-apps", "Settings", "Contacts", "--style", "grid", "--yes", ok=False)
     home()

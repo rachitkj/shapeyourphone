@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import re
 import shlex
+import time
 from dataclasses import asdict, dataclass, field
 from typing import Callable, List, Optional
 
@@ -261,6 +262,20 @@ class Result:
     message: str = ""
 
 
+# Some changes land asynchronously. Android's RoleManager applies a new home app a moment after
+# `cmd role add-role-holder` returns (seen on the Android 14 emulator), so re-check before failing.
+ASYNC_KINDS = {"home": 6.0}
+
+
+def settle(dev: Device, kind: str, target: str, want: str) -> str:
+    now = read_state(dev, kind, target, dev.user)
+    deadline = time.monotonic() + ASYNC_KINDS.get(kind, 0)
+    while not _matches(kind, now, want) and time.monotonic() < deadline:
+        time.sleep(0.5)
+        now = read_state(dev, kind, target, dev.user)
+    return now
+
+
 def execute(dev: Device, log: ChangeLog, op: Op, source: str) -> Result:
     if op.noop:
         return Result("skipped", op, message="already %s" % op.after)
@@ -269,7 +284,7 @@ def execute(dev: Device, log: ChangeLog, op: Op, source: str) -> Result:
         out = msg
     else:
         out = dev.sh(op.do)
-    now = read_state(dev, op.kind, op.target, dev.user)
+    now = settle(dev, op.kind, op.target, op.after)
     if _matches(op.kind, now, op.after):
         return Result("applied", op, log.add(op, source, "applied"))
     err = (out or "").strip().splitlines()
@@ -300,8 +315,8 @@ def undo_change(dev: Device, log: ChangeLog, c: Change, launcher_undo: Optional[
         if not c.undo:
             return Result("failed", op, c, "no undo command recorded")
         dev.sh(c.undo)
-        now = read_state(dev, c.kind, c.target, dev.user)
         expected = c.before
+        now = settle(dev, c.kind, c.target, expected)
         if c.kind == "home" and c.before == "none":
             expected = now  # nothing specific to return to; any non-Shape home is fine
         if not _matches(c.kind, now, expected):
