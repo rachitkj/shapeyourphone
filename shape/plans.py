@@ -28,7 +28,7 @@ from . import changes as ch
 from . import probe
 from .adb import Device
 from .safety import Guard
-from .state import REPO_ROOT, PhoneState, now_iso, now_ts, read_json, write_json
+from .state import DATA_DIR, PhoneState, now_iso, now_ts, read_json, write_json
 
 TIERS = ("safe", "recommended", "optional")
 TIER_SETS = {"safe": {"safe"}, "recommended": {"safe", "recommended"}, "all": set(TIERS)}
@@ -36,7 +36,7 @@ TIER_SETS = {"safe": {"safe"}, "recommended": {"safe", "recommended"}, "all": se
 
 def load_bloat() -> Dict[str, dict]:
     out: Dict[str, dict] = {}
-    for f in sorted((REPO_ROOT / "data" / "bloat").glob("*.json")):
+    for f in sorted((DATA_DIR / "bloat").glob("*.json")):
         for e in json.loads(f.read_text()):
             e = dict(e)
             e["list"] = f.stem
@@ -58,7 +58,7 @@ def scan(dev: Device, ps: PhoneState) -> dict:
             continue
         ok, reason = guard.check(pkg)
         found.append({**{k: e[k] for k in ("pkg", "name", "tier", "why", "breaks") if k in e},
-                      "list": e["list"], "allowed": ok, "blocked_reason": reason})
+                      "list": e["list"], "verified_on": e.get("verified_on", []), "allowed": ok, "blocked_reason": reason})
     # system apps with an icon that no list knows about: ask the owner
     visible = {c.split("/")[0] for c in probe.launchable_components(dev)}
     unknown = []
@@ -110,7 +110,8 @@ def make_debloat_plan(dev: Device, ps: PhoneState, tier: str, include: List[str]
             blocked.append({"pkg": e["pkg"], "name": e.get("name", ""), "reason": e["blocked_reason"]})
             continue
         actions.append({"op": method, "pkg": e["pkg"], "name": e.get("name", ""), "tier": e.get("tier", ""),
-                        "why": e.get("why", ""), "breaks": e.get("breaks", "")})
+                        "why": e.get("why", ""), "breaks": e.get("breaks", ""),
+                        "verified_on": e.get("verified_on", [])})
     return {"kind": "debloat", "created": now_iso(), "device": ps.key, "tier": tier,
             "actions": actions, "blocked": blocked,
             "how_to_review": "Remove any action the owner wants to keep, then: python3 -m shape apply <this file> --yes"}
@@ -194,6 +195,8 @@ def write_restore(ps: PhoneState, log: Optional[ch.ChangeLog] = None) -> str:
         path.chmod(0o755)
     except OSError:
         pass
+    with open(ps.path("restore.ps1"), "w", newline="") as f:  # keep CRLF line endings on every OS
+        f.write(ch.restore_script_ps1(log))
     return str(path)
 
 

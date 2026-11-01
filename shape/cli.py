@@ -12,7 +12,9 @@ from . import LAUNCHER_PACKAGE, __version__
 from . import changes as ch
 from . import launcher as lz
 from . import launcher_config as lc
-from . import plans, privacy, probe, tweaks
+from . import clone as cl
+from . import edits as ed
+from . import insights, plans, privacy, probe, tweaks
 from .adb import AdbError, Device, find_adb, list_devices, pick_device
 from .state import PREFERENCES_TEMPLATE, PhoneState, read_json, write_json
 
@@ -162,8 +164,12 @@ def cmd_scan(args) -> int:
         print("\n%s (%d)" % (tier.upper(), len(items)))
         for b in items:
             flag = "" if b["allowed"] else "   [kept: %s]" % b["blocked_reason"]
-            print("  %-48s %s%s" % (b["pkg"], b["name"], flag))
+            mark = "✓" if b.get("verified_on") else " "
+            print("%s %-48s %s%s" % (mark, b["pkg"], b["name"], flag))
             print("  %-48s   why: %s | loses: %s" % ("", b["why"], b["breaks"]))
+    if res["bloat"]:
+        print("\n✓ = confirmed on a real phone by someone. Unmarked entries are believed safe but not yet confirmed;\n"
+              "everything is reversible either way. (`shape report --share` helps confirm them.)")
     if res["already_off"]:
         print("\nAlready off: %s" % ", ".join(a["pkg"] for a in res["already_off"]))
     if res["unreviewed_system_apps"]:
@@ -403,6 +409,11 @@ def cmd_report(args) -> int:
             rep["launcher"] = lz.status(dev)
         except lz.LauncherError as e:
             rep["launcher"] = {"error": str(e)}
+    if args.share:
+        print(insights.share_report(dev, ps, rep["launcher"]))
+        print("\n(Paste the above into a new issue: https://github.com/rachitkj/shapeyourphone/issues/new?template=device-report.yml)",
+              file=sys.stderr)
+        return 0
     if args.json:
         out(rep)
         return 0
@@ -581,6 +592,215 @@ def cmd_l_uninstall(args) -> int:
     return 0
 
 
+# -- name-based launcher edits ------------------------------------------------
+
+def _edit(args, describe: str, mutate) -> int:
+    """Pull the phone's config, apply `mutate(cfg, resolver)`, show the diff, push on approval."""
+    dev = get_dev(args)
+    ps = ensure_init(dev, quiet=True)
+    apps = lz.list_apps(dev)
+    resolver = ed.AppResolver(apps)
+    before = lz.get_config(dev)
+    try:
+        after = mutate(before, resolver)
+    except ed.EditError as e:
+        print("error: %s" % e, file=sys.stderr)
+        return 2
+    labels = ed.label_map(apps)
+    diff = ed.diff_lines(lc.summarize(before, labels), lc.summarize(after, labels))
+    if after == before or not diff:
+        print("No change — the home screen already looks like that.")
+        return 0
+    rep = lc.validate(after, set(labels))
+    if not rep.ok:
+        for e in rep.errors:
+            print("error:   " + e)
+        return 1
+    for w in rep.warnings:
+        print("warning: " + w)
+    print(describe)
+    for line in diff:
+        print("  " + line)
+    if not confirm("Apply to the home screen?", args.yes):
+        return 2
+    h, c = lz.push(dev, ps, after, source="launcher " + args.lcmd)
+    print("Done (#%d). Undo: python3 -m shape launcher rollback" % c.id)
+    return 0
+
+
+def cmd_l_hide(args) -> int:
+    w = ed.when(args.days, args.from_, args.to)
+
+    def m(cfg, r):
+        return ed.hide(cfg, r.resolve_all(args.apps), w, args.name)
+    what = "Hide %s %s" % (", ".join(args.apps), "(%s)" % ed._rule_name(w) if w else "everywhere")
+    return _edit(args, what, m)
+
+
+def cmd_l_unhide(args) -> int:
+    return _edit(args, "Show %s again" % ", ".join(args.apps), lambda cfg, r: ed.unhide(cfg, r.resolve_all(args.apps)))
+
+
+def cmd_l_search_only(args) -> int:
+    return _edit(args, "Only find %s by searching" % ", ".join(args.apps), lambda cfg, r: ed.search_only(cfg, r.resolve_all(args.apps)))
+
+
+def _mode(args) -> str:
+    return "add" if args.add else "remove" if args.remove else "set"
+
+
+def cmd_l_dock(args) -> int:
+    return _edit(args, "Dock: %s %s" % (_mode(args), ", ".join(args.apps)), lambda cfg, r: ed.dock(cfg, r.resolve_all(args.apps), _mode(args)))
+
+
+def cmd_l_home_apps(args) -> int:
+    return _edit(args, "Home apps: %s %s" % (_mode(args), ", ".join(args.apps)),
+                 lambda cfg, r: ed.home_apps(cfg, r.resolve_all(args.apps), _mode(args), args.style))
+
+
+def cmd_l_theme(args) -> int:
+    changes = {
+        "background": args.background, "dim": args.dim, "foreground": args.foreground, "secondary": args.secondary,
+        "accent": args.accent, "font": args.font, "textSize": args.text_size, "iconStyle": args.icons,
+        "iconSize": args.icon_size, "padding": args.padding,
+    }
+    if all(v is None for v in changes.values()):
+        print("Nothing to change. See: shape launcher theme --help")
+        return 2
+    return _edit(args, "Theme", lambda cfg, r: ed.theme(cfg, **changes))
+
+
+def cmd_l_gesture(args) -> int:
+    def m(cfg, r):
+        action = args.action
+        if action not in lc.GESTURE_ACTIONS:
+            action = "app:" + r.resolve(action[4:] if action.startswith("app:") else action)
+        return ed.gesture(cfg, args.gesture, action)
+    return _edit(args, "Gesture %s → %s" % (args.gesture, args.action), m)
+
+
+def cmd_l_rename(args) -> int:
+    return _edit(args, "Rename %s" % args.app, lambda cfg, r: ed.rename(cfg, r.resolve(args.app), args.label))
+
+
+def cmd_l_pause(args) -> int:
+    mode = "remove" if args.remove else "add"
+    return _edit(args, "Pause before opening: %s %s" % (mode, ", ".join(args.apps)),
+                 lambda cfg, r: ed.pause(cfg, r.resolve_all(args.apps), mode, args.seconds, args.message))
+
+
+def cmd_l_rules(args) -> int:
+    dev = get_dev(args)
+    cfg = lz.get_config(dev)
+    rules = cfg.get("rules", [])
+    active = lz.status(dev)["active_rules"]
+    if not rules:
+        print("No rules yet. Example: shape launcher hide Instagram --days weekdays --from 09:00 --to 18:00")
+    labels = ed.label_map(lz.list_apps(dev))
+    for line in lc.summarize({"rules": rules}, labels):
+        if line.startswith("Rule"):
+            name = line.split("'")[1]
+            print("  %s %s" % ("●" if name in active else "○", line))
+    return 0
+
+
+def cmd_l_rule_remove(args) -> int:
+    return _edit(args, "Remove rule '%s'" % args.name, lambda cfg, r: ed.remove_rule(cfg, args.name))
+
+
+def cmd_l_usage_access(args) -> int:
+    mode = "default" if args.revoke else "allow"
+    why = "%s the Shape launcher read app usage time (for `shape suggest`)" % ("Stop letting" if args.revoke else "Let")
+    return _run_actions(args, [{"op": "appop", "pkg": LAUNCHER_PACKAGE, "appop": "GET_USAGE_STATS", "mode": mode, "why": why}],
+                        "launcher usage-access")
+
+
+# -- suggestions, clone, phones ------------------------------------------------
+
+def cmd_suggest(args) -> int:
+    dev = get_dev(args)
+    ps = ensure_init(dev, quiet=True)
+    try:
+        usage = lz.usage(dev, args.days)
+    except lz.LauncherError as e:
+        if "usage access" in str(e):
+            print("The Shape launcher can't see app usage yet. Ask the owner, then run:\n"
+                  "  python3 -m shape launcher usage-access --yes")
+            return 2
+        raise
+    cfg = lz.get_config(dev)
+    states = probe.package_states(dev)
+    from .safety import Guard
+    guard = Guard(dev, ps.keep())
+    res = insights.suggest(usage, cfg, args.days,
+                           can_disable=lambda p: guard.check(p)[0],
+                           is_system=lambda p: states.get(p, {}).get("system", False))
+    if args.json:
+        out(res)
+        return 0
+    print("Based on the last %d days (suggestions only — nothing has changed):" % args.days)
+    if res["put_in_reach"]:
+        print("\nUsed most, but not on the home screen or dock:")
+        for u in res["put_in_reach"]:
+            print("  %-28s %5.0f min/day" % (u["label"][:28], u["minutes_per_day"]))
+    if res["heavy_use"]:
+        print("\nMore than an hour a day (a pause or a time rule might help, if the owner wants):")
+        for u in res["heavy_use"]:
+            print("  %-28s %5.0f min/day" % (u["label"][:28], u["minutes_per_day"]))
+    if res["unused"]:
+        print("\nNot opened in %d days:" % args.days)
+        for u in res["unused"]:
+            print("  %-28s %s" % (u["label"][:28], u["option"]))
+    return 0
+
+
+def cmd_phones(args) -> int:
+    phones = cl.known_phones()
+    if args.json:
+        out(phones)
+        return 0
+    if not phones:
+        print("No phones set up yet.")
+    for p in phones:
+        print("  %-36s %-26s Android %-4s %3d active change(s)%s" % (
+            p["key"], p["phone"][:26], p["android"], p["active_changes"], "  + home screen" if p["has_launcher_config"] else ""))
+    return 0
+
+
+def cmd_clone(args) -> int:
+    dev = get_dev(args)
+    ps = ensure_init(dev)
+    src = cl.find_phone(args.source)
+    if src.resolve() == ps.dir.resolve():
+        print("That's this phone. To re-apply its changes after an update or reset, use: shape drift / shape reapply")
+        return 2
+    plan, launcher_cfg = cl.build_plan(dev, ps, src)
+    path = plans.save_plan(ps, plan)
+    print("Clone plan from %s: %s" % (src.name, path))
+    for a in plan["actions"]:
+        print("  %-10s %s" % (a["op"], a.get("name") or a.get("key") or a.get("mode")))
+    if plan["skipped"]:
+        print("  (%d change(s) skipped — those apps aren't on this phone)" % len(plan["skipped"]))
+    if launcher_cfg:
+        print("  + install the Shape launcher and restore the old home screen")
+    if not confirm("Set this phone up the same way?", args.yes):
+        return 2
+    summary = plans.apply_plan(dev, ps, plan, "clone:%s" % src.name)
+    for note in cl.copy_memory(ps, src):
+        print("  " + note)
+    if launcher_cfg and dev.sdk >= 26:
+        try:
+            if not lz.is_installed(dev):
+                lz.install(dev, ps, None)
+            lz.push(dev, ps, launcher_cfg, source="clone:%s" % src.name)
+            print("  done     home screen restored")
+        except lz.LauncherError as e:
+            print("  Home screen not restored: %s\n  Later: shape launcher install, then shape launcher push %s" % (
+                e, src / "launcher" / "current.json"))
+    plans.write_restore(ps)
+    return 0 if not summary["failed"] else 1
+
+
 # -- parser ------------------------------------------------------------------
 
 def build_parser() -> argparse.ArgumentParser:
@@ -653,8 +873,17 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--yes", action="store_true")
     sp = add("report", cmd_report, "before/after summary")
     sp.add_argument("--json", action="store_true")
+    sp.add_argument("--share", action="store_true", help="anonymous markdown device report for a GitHub issue")
     sp = add("prefs", cmd_prefs, "show the owner's preferences file")
     sp.add_argument("--path", action="store_true")
+    sp = add("suggest", cmd_suggest, "suggestions from how the phone is actually used")
+    sp.add_argument("--days", type=int, default=30)
+    sp.add_argument("--json", action="store_true")
+    sp = add("phones", cmd_phones, "phones set up on this computer")
+    sp.add_argument("--json", action="store_true")
+    sp = add("clone", cmd_clone, "set this phone up like another one (new phone, factory reset)")
+    sp.add_argument("--from", dest="source", required=True, help="saved phone (see: shape phones); a prefix is enough")
+    sp.add_argument("--yes", action="store_true")
 
     lp = sub.add_parser("launcher", help="the Shape home screen").add_subparsers(dest="lcmd", required=True)
 
@@ -686,7 +915,69 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("to", nargs="?", help="history name/prefix, or -N (default -1)")
     sp = ladd("uninstall", cmd_l_uninstall, "restore the previous launcher and remove Shape")
     sp.add_argument("--yes", action="store_true")
+
+    # name-based edits: apps can be given by name ("Instagram"), package, or @dialer/@sms/@browser/@camera/@settings
+    sp = ladd("hide", cmd_l_hide, "hide apps everywhere, or only at certain times")
+    sp.add_argument("apps", nargs="+")
+    sp.add_argument("--days", help="weekdays, weekends, or e.g. mon,tue")
+    sp.add_argument("--from", dest="from_", metavar="HH:MM")
+    sp.add_argument("--to", metavar="HH:MM")
+    sp.add_argument("--name", help="rule name (default: from the times)")
+    sp.add_argument("--yes", action="store_true")
+    sp = ladd("unhide", cmd_l_unhide, "show apps again (removes them from hidden, search-only and rules)")
+    sp.add_argument("apps", nargs="+")
+    sp.add_argument("--yes", action="store_true")
+    sp = ladd("search-only", cmd_l_search_only, "keep apps out of the list; still found by search")
+    sp.add_argument("apps", nargs="+")
+    sp.add_argument("--yes", action="store_true")
+    for name, fn, help_ in (("dock", cmd_l_dock, "set the dock apps"), ("home-apps", cmd_l_home_apps, "set the apps on the home screen")):
+        sp = ladd(name, fn, help_)
+        sp.add_argument("apps", nargs="+")
+        g = sp.add_mutually_exclusive_group()
+        g.add_argument("--add", action="store_true")
+        g.add_argument("--remove", action="store_true")
+        if name == "home-apps":
+            sp.add_argument("--style", choices=sorted(lc.APP_STYLES))
+        sp.add_argument("--yes", action="store_true")
+    sp = ladd("theme", cmd_l_theme, "colours, font, icon style")
+    sp.add_argument("--background", help="#RRGGBB or 'wallpaper'")
+    sp.add_argument("--dim", type=float, help="0-1, darkens the wallpaper")
+    sp.add_argument("--foreground")
+    sp.add_argument("--secondary")
+    sp.add_argument("--accent")
+    sp.add_argument("--font", choices=sorted(lc.FONTS))
+    sp.add_argument("--text-size", type=float)
+    sp.add_argument("--icons", choices=sorted(lc.ICON_STYLES))
+    sp.add_argument("--icon-size", type=int)
+    sp.add_argument("--padding", type=int)
+    sp.add_argument("--yes", action="store_true")
+    sp = ladd("gesture", cmd_l_gesture, "what a gesture does")
+    sp.add_argument("gesture", choices=sorted(lc.GESTURE_KEYS))
+    sp.add_argument("action", help="%s, or an app name" % ", ".join(sorted(lc.GESTURE_ACTIONS)))
+    sp.add_argument("--yes", action="store_true")
+    sp = ladd("rename", cmd_l_rename, "show an app under another name (omit the name to reset)")
+    sp.add_argument("app")
+    sp.add_argument("label", nargs="?")
+    sp.add_argument("--yes", action="store_true")
+    sp = ladd("pause", cmd_l_pause, "a short pause screen before opening distracting apps")
+    sp.add_argument("apps", nargs="+")
+    sp.add_argument("--remove", action="store_true")
+    sp.add_argument("--seconds", type=int)
+    sp.add_argument("--message")
+    sp.add_argument("--yes", action="store_true")
+    ladd("rules", cmd_l_rules, "list time rules (● = active now)")
+    sp = ladd("rule-remove", cmd_l_rule_remove, "delete a time rule")
+    sp.add_argument("name")
+    sp.add_argument("--yes", action="store_true")
+    sp = ladd("usage-access", cmd_l_usage_access, "let the launcher read app usage time (for suggest)")
+    sp.add_argument("--revoke", action="store_true")
+    sp.add_argument("--yes", action="store_true")
     return p
+
+
+def run() -> None:
+    """Console-script entry point (`shape` after pipx install)."""
+    sys.exit(main())
 
 
 def main(argv: Optional[List[str]] = None) -> int:

@@ -346,6 +346,23 @@ class FakePhone:
             apps = [{"package": p, "activity": i["activity"], "label": i["label"]}
                     for p, i in sorted(self.pkgs.items()) if i["activity"] and i["state"] == "enabled" and p != LAUNCHER]
             return res(ok="true", data_b64=b(json.dumps(apps)))
+        if method == "usage":
+            if self.appops.get((LAUNCHER, "GET_USAGE_STATS")) != "allow":
+                return res(ok="false", error_b64=b("usage access not granted — run: shape launcher usage-access"))
+            day = 86_400_000
+            now = 1_800_000_000_000
+            days = int(arg or "30")
+            sample = {
+                "com.whatsapp": (90 * 60_000 * days, now - 3_600_000),
+                "com.instagram.android": (70 * 60_000 * days, now - 7_200_000),
+                "com.spotify.music": (5 * 60_000 * days, now - day),
+                "com.android.settings": (1 * 60_000 * days, now - 2 * day),
+                "com.samsung.android.app.tips": (0, now - 200 * day),
+                "com.samsung.android.app.notes": (0, 0),
+            }
+            out = [{"package": p, "label": self.pkgs[p]["label"], "foreground_ms": fg, "last_used": lu}
+                   for p, (fg, lu) in sample.items() if p in self.pkgs and self.pkgs[p]["state"] == "enabled"]
+            return res(ok="true", data_b64=b(json.dumps(out)))
         if method == "stage_begin":
             self.stage = ""
             return res(ok="true")

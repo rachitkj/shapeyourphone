@@ -25,7 +25,8 @@ TEXT_COLORS = {"foreground", "secondary", "accent"}
 GESTURE_ACTIONS = {"drawer", "search", "notifications", "quickSettings", "homeSettings", "none"}
 WIDGET_TYPES = {"clock", "text", "spacer", "apps", "search", "calendar"}
 
-TOP_KEYS = {"version", "name", "theme", "home", "dock", "drawer", "labels", "gestures", "rules"}
+TOP_KEYS = {"version", "name", "theme", "home", "dock", "drawer", "labels", "gestures", "pause", "rules"}
+PAUSE_KEYS = {"apps", "seconds", "message"}
 THEME_KEYS = {"background", "dim", "foreground", "secondary", "accent", "font", "textSize", "iconStyle", "iconSize", "padding"}
 DOCK_KEYS = {"apps", "labels"}
 DRAWER_KEYS = {"style", "columns", "showSearch", "autoLaunch", "hidden", "searchOnly"}
@@ -225,6 +226,17 @@ def _partial(r: Report, where: str, cfg: dict, known: Optional[set]) -> None:
         else:
             for k in lab:
                 _appref(r, where + ".labels", k, known)
+    if "pause" in cfg:
+        pz = cfg["pause"]
+        if not isinstance(pz, dict):
+            r.err(where + ".pause", "must be an object")
+        else:
+            _unknown(r, where + ".pause", pz, PAUSE_KEYS)
+            _applist(r, where + ".pause.apps", pz.get("apps", []), known)
+            if "seconds" in pz:
+                _num(r, where + ".pause.seconds", pz["seconds"], 1, 60)
+            if "message" in pz and not isinstance(pz["message"], str):
+                r.err(where + ".pause.message", "must be a string")
     if "gestures" in cfg:
         g = cfg["gestures"]
         if not isinstance(g, dict):
@@ -373,6 +385,9 @@ def summarize(cfg: dict, labels: Optional[dict] = None) -> List[str]:
         out.append("Hidden everywhere: " + ", ".join(name(a) for a in d["hidden"]))
     if d.get("searchOnly"):
         out.append("Only via search: " + ", ".join(name(a) for a in d["searchOnly"]))
+    pz = cfg.get("pause", {})
+    if pz.get("apps"):
+        out.append("Pause %ss before opening: %s" % (pz.get("seconds", 5), ", ".join(name(a) for a in pz["apps"])))
     g = cfg.get("gestures", {})
     if g:
         out.append("Gestures: " + ", ".join("%s → %s" % (k, v) for k, v in g.items()))

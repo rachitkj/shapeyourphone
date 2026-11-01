@@ -26,4 +26,4 @@ other brands are harmless.
 ## Contributing
 
 Add entries you have tested on a real phone, and mention the phone model and
-OS version in your PR. Never add anything that is in `data/protected.json`.
+OS version in your PR. Never add anything that is in `shape/data/protected.json`.

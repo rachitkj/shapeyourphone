@@ -11,7 +11,7 @@ from shape.safety import Guard, static_reason
 class BloatData(unittest.TestCase):
     def test_lists_are_well_formed(self):
         seen = {}
-        for f in sorted((ROOT / "data" / "bloat").glob("*.json")):
+        for f in sorted((ROOT / "shape" / "data" / "bloat").glob("*.json")):
             for e in json.loads(f.read_text()):
                 for k in ("pkg", "name", "tier", "why", "breaks"):
                     self.assertIn(k, e, "%s: %s missing %s" % (f.name, e.get("pkg"), k))

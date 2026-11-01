@@ -90,6 +90,13 @@ def list_apps(dev: Device) -> List[dict]:
     return json.loads(_b64d(r.get("data_b64", "")) or "[]")
 
 
+def usage(dev: Device, days: int) -> List[dict]:
+    """Per-app foreground time over the last `days`, from Android's UsageStatsManager.
+    Needs usage access for the launcher: `shape launcher usage-access --yes`."""
+    r = call(dev, "usage", str(int(days)))
+    return json.loads(_b64d(r.get("data_b64", "")) or "[]")
+
+
 def get_config(dev: Device) -> dict:
     r = call(dev, "get_config")
     return json.loads(_b64d(r.get("data_b64", "")))
@@ -146,9 +153,11 @@ def push(dev: Device, ps: PhoneState, cfg: dict, source: str = "launcher push") 
     # history: keep what was there before the first shape push, then every pushed version
     hd = history_dir(ps)
     if before is not None and not history(ps):
-        write_json(hd / ("%s-before.json" % now_ts()), before)
+        write_json(hd / ("0000-%s-before.json" % now_ts()), before)
     h = send_config(dev, cfg)
-    stamp = "%s-%s" % (now_ts(), h)
+    # zero-padded sequence first: history must sort in push order even within one second
+    seq = max((int(stem[:4]) for stem, _ in history(ps) if stem[:4].isdigit()), default=0) + 1
+    stamp = "%04d-%s-%s" % (seq, now_ts(), h)
     write_json(hd / ("%s.json" % stamp), cfg)
     write_json(ps.path("launcher", "current.json"), cfg)
     prev_file = ""

@@ -5,10 +5,10 @@ The most useful contributions right now:
 1. **Real-device reports.** Run a session on your phone and open an issue with
    the model, Android version and OEM skin (`shape doctor` prints them), what
    worked, and any command that failed along with its output.
-2. **Bloat list entries** you have tested. See `data/bloat/README.md`. Say what
+2. **Bloat list entries** you have tested. See `shape/data/bloat/README.md`. Say what
    breaks, honestly.
 3. **Protected packages.** If disabling something broke a phone, add it to
-   `data/protected.json` with the reason.
+   `shape/data/protected.json` with the reason.
 
 Ground rules:
 - Every change to a phone must go through `shape/changes.py` ops so it is

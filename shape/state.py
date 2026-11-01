@@ -24,11 +24,24 @@ from typing import Any
 
 from .adb import Device
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+PACKAGE_DIR = Path(__file__).resolve().parent
+DATA_DIR = PACKAGE_DIR / "data"
+REPO_ROOT = PACKAGE_DIR.parent
+
+
+def running_from_checkout() -> bool:
+    """True when run from a clone of the repo (the agent workflow), not a pipx/pip install."""
+    return (REPO_ROOT / "PROMPT.md").exists() and (REPO_ROOT / "launcher").is_dir()
 
 
 def shape_home() -> Path:
-    return Path(os.environ.get("SHAPE_HOME") or (REPO_ROOT / "devices"))
+    """Per-phone data. In a clone it sits next to PROMPT.md so the agent can read it;
+    when installed it goes to ~/.shapeyourphone. SHAPE_HOME overrides both."""
+    if os.environ.get("SHAPE_HOME"):
+        return Path(os.environ["SHAPE_HOME"])
+    if running_from_checkout():
+        return REPO_ROOT / "devices"
+    return Path.home() / ".shapeyourphone" / "devices"
 
 
 def now_ts() -> str:

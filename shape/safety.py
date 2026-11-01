@@ -1,7 +1,7 @@
 """Decide whether a package may be disabled or removed on this phone.
 
 Two layers:
-  * static: data/protected.json (core Android, telephony, stock launchers, OEM bootloop list)
+  * static: shape/data/protected.json (core Android, telephony, stock launchers, OEM bootloop list)
   * dynamic: what *this* phone depends on right now — the active keyboard, the
     WebView provider, the default dialer/SMS/home apps, accessibility services
     the owner switched on, device admins — plus the owner's keep list.
@@ -15,12 +15,12 @@ from typing import Dict, Optional, Tuple
 
 from . import probe
 from .adb import Device
-from .state import REPO_ROOT
+from .state import DATA_DIR
 
 
 @lru_cache(maxsize=1)
 def _static() -> Tuple[Dict[str, str], Dict[str, str]]:
-    with open(REPO_ROOT / "data" / "protected.json") as f:
+    with open(DATA_DIR / "protected.json") as f:
         data = json.load(f)
     return data["packages"], data["prefixes"]
 
