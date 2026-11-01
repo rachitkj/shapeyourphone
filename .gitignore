@@ -1,0 +1,24 @@
+# Per-phone state: snapshots, change logs, preferences. Personal — never commit.
+/devices/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Android / Gradle
+.gradle/
+build/
+local.properties
+*.iml
+.idea/
+captures/
+.cxx/
+*.apk
+*.aab
+*.jks
+*.keystore
+
+# OS
+.DS_Store
