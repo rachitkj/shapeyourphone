@@ -22,3 +22,6 @@ captures/
 
 # OS
 .DS_Store
+
+# e2e emulator screenshots
+/e2e-artifacts/

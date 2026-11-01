@@ -39,3 +39,39 @@ jobs:
             launcher/app/build/outputs/apk/debug/*.apk
             launcher/app/build/reports/
           if-no-files-found: warn
+
+  # The real thing: the CLI over real adb against an Android 14 emulator.
+  emulator:
+    runs-on: ubuntu-latest
+    needs: [python, launcher]
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+      - run: cd launcher && ./gradlew --no-daemon assembleDebug
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: python3 tests/e2e_emulator.py launcher/app/build/outputs/apk/debug/app-debug.apk
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-screenshots
+          path: e2e-artifacts/
+          if-no-files-found: warn
