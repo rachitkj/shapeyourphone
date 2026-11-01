@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">amos</string>
+    <string name="app_name">Shape</string>
     <string name="search_hint">Search apps</string>
     <string name="no_results">No apps match</string>
 </resources>

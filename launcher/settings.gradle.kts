@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "amos-launcher"
+rootProject.name = "shape-launcher"
 include(":app")

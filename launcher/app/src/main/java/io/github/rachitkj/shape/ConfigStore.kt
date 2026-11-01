@@ -1,4 +1,4 @@
-package io.github.rachitkj.amos
+package io.github.rachitkj.shape
 
 import android.content.Context
 import android.os.Handler
@@ -35,7 +35,7 @@ object ConfigStore {
         notifyChanged()
     }
 
-    /** Same as amos/launcher.py config_hash(): first 12 hex chars of SHA-256 over UTF-8. */
+    /** Same as shape/launcher.py config_hash(): first 12 hex chars of SHA-256 over UTF-8. */
     fun hash(text: String): String {
         val d = MessageDigest.getInstance("SHA-256").digest(text.toByteArray(Charsets.UTF_8))
         return d.joinToString("") { "%02x".format(it) }.substring(0, 12)

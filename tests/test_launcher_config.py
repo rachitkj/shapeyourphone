@@ -3,7 +3,7 @@ import unittest
 
 from helpers import ROOT
 
-from amos import launcher_config as lc
+from shape import launcher_config as lc
 
 VECTORS = json.loads((ROOT / "tests" / "vectors" / "rules.json").read_text())
 

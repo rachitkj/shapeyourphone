@@ -4,7 +4,7 @@
 
     <!-- Swipe down on the home screen opens the notification shade. -->
     <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
-    <!-- Optional: the "calendar" widget. Only granted if the owner asks (amos perm grant). -->
+    <!-- Optional: the "calendar" widget. Only granted if the owner asks (shape perm grant). -->
     <uses-permission android:name="android.permission.READ_CALENDAR" />
 
     <queries>
@@ -35,7 +35,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Amos"
+        android:theme="@style/Theme.Shape"
         tools:ignore="DataExtractionRules,UnusedAttribute">
 
         <activity
@@ -57,7 +57,7 @@
         </activity>
 
         <!--
-          Control channel for the amos CLI. Exported so `adb shell content call`
+          Control channel for the shape CLI. Exported so `adb shell content call`
           can reach it, but ControlProvider rejects every caller that isn't the
           adb shell user (uid 2000) or root — other apps can't touch the config.
         -->

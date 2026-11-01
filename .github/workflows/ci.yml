@@ -14,7 +14,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: python -m unittest discover -s tests -t tests -v
-      - run: for f in config/default.json config/examples/*.json; do python -m amos launcher validate "$f"; done
+      - run: for f in config/default.json config/examples/*.json; do python -m shape launcher validate "$f"; done
 
   launcher:
     runs-on: ubuntu-latest

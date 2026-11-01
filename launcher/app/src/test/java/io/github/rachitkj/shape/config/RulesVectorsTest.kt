@@ -1,4 +1,4 @@
-package io.github.rachitkj.amos.config
+package io.github.rachitkj.shape.config
 
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
@@ -8,7 +8,7 @@ import java.io.File
 /** Runs tests/vectors/rules.json — the same vectors the Python toolkit's tests use. */
 class RulesVectorsTest {
     private val vectors: JSONObject by lazy {
-        val path = System.getProperty("amos.vectors") ?: "../../tests/vectors/rules.json"
+        val path = System.getProperty("shape.vectors") ?: "../../tests/vectors/rules.json"
         JSONObject(File(path).readText())
     }
 

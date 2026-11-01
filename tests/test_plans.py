@@ -3,9 +3,9 @@ import unittest
 
 from helpers import ROOT, PhoneTest
 
-from amos import changes as ch
-from amos import plans
-from amos.safety import Guard, static_reason
+from shape import changes as ch
+from shape import plans
+from shape.safety import Guard, static_reason
 
 
 class BloatData(unittest.TestCase):

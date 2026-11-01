@@ -27,8 +27,8 @@ from .adb import Device
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
-def amos_home() -> Path:
-    return Path(os.environ.get("AMOS_HOME") or (REPO_ROOT / "devices"))
+def shape_home() -> Path:
+    return Path(os.environ.get("SHAPE_HOME") or (REPO_ROOT / "devices"))
 
 
 def now_ts() -> str:
@@ -75,7 +75,7 @@ class PhoneState:
     def __init__(self, dev: Device, root: Path | None = None):
         self.dev = dev
         self.key = device_key(dev)
-        self.dir = (root or amos_home()) / self.key
+        self.dir = (root or shape_home()) / self.key
 
     @property
     def exists(self) -> bool:

@@ -27,11 +27,11 @@ INSTALL_HELP = """adb (Android platform-tools) is not installed.
   Windows: winget install Google.PlatformTools
   Linux:   sudo apt install adb   (or your distro's android-tools package)
   Any OS:  https://developer.android.com/tools/releases/platform-tools
-Or point AMOS_ADB at an adb binary."""
+Or point SHAPE_ADB at an adb binary."""
 
 
 def find_adb() -> str:
-    env = os.environ.get("AMOS_ADB")
+    env = os.environ.get("SHAPE_ADB")
     if env:
         return env
     found = shutil.which("adb")
@@ -143,7 +143,7 @@ def list_devices(runner: Optional[Runner] = None) -> List[dict]:
 
 
 def pick_device(serial: Optional[str] = None, runner: Optional[Runner] = None) -> Device:
-    serial = serial or os.environ.get("AMOS_DEVICE")
+    serial = serial or os.environ.get("SHAPE_DEVICE")
     devices = list_devices(runner)
     ready = [d for d in devices if d["state"] == "device"]
     if serial:
@@ -156,7 +156,7 @@ def pick_device(serial: Optional[str] = None, runner: Optional[Runner] = None) -
     if not devices:
         raise AdbError(
             "No phone found. Connect it by USB with USB debugging on, or use Wireless debugging:\n"
-            "  python3 -m amos pair <ip:port> <code>   then   python3 -m amos connect <ip:port>"
+            "  python3 -m shape pair <ip:port> <code>   then   python3 -m shape connect <ip:port>"
         )
     if not ready:
         raise AdbError(_state_help(devices[0]))

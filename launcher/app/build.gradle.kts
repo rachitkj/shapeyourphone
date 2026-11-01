@@ -6,14 +6,14 @@ plugins {
 }
 
 // Release signing comes from the environment (CI secrets); see scripts/make-release-key.sh.
-val keystorePath: String? = System.getenv("AMOS_KEYSTORE")
+val keystorePath: String? = System.getenv("SHAPE_KEYSTORE")
 
 android {
-    namespace = "io.github.rachitkj.amos"
+    namespace = "io.github.rachitkj.shape"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "io.github.rachitkj.amos"
+        applicationId = "io.github.rachitkj.shape"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
@@ -24,9 +24,9 @@ android {
         if (keystorePath != null) {
             create("release") {
                 storeFile = file(keystorePath)
-                storePassword = System.getenv("AMOS_KEYSTORE_PASSWORD")
-                keyAlias = System.getenv("AMOS_KEY_ALIAS")
-                keyPassword = System.getenv("AMOS_KEY_PASSWORD")
+                storePassword = System.getenv("SHAPE_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("SHAPE_KEY_ALIAS")
+                keyPassword = System.getenv("SHAPE_KEY_PASSWORD")
             }
         }
     }
@@ -62,7 +62,7 @@ kotlin {
 
 tasks.withType<Test>().configureEach {
     // Rule vectors shared with tests/test_launcher_config.py
-    systemProperty("amos.vectors", rootProject.file("../tests/vectors/rules.json").absolutePath)
+    systemProperty("shape.vectors", rootProject.file("../tests/vectors/rules.json").absolutePath)
 }
 
 dependencies {

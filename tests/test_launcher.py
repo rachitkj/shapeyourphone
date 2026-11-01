@@ -4,9 +4,9 @@ import unittest
 
 from helpers import ROOT, PhoneTest
 
-from amos import LAUNCHER_PACKAGE
-from amos import changes as ch
-from amos import launcher as lz
+from shape import LAUNCHER_PACKAGE
+from shape import changes as ch
+from shape import launcher as lz
 
 
 class LauncherFlow(PhoneTest):

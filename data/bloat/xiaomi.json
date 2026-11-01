@@ -1,5 +1,5 @@
 [
-  {"pkg": "com.miui.msa.global", "name": "MIUI System Ads (MSA)", "tier": "safe", "why": "Serves ads inside Xiaomi system apps.", "breaks": "Nothing visible. If 'disable' is refused, amos removes it for this user instead (still reversible)."},
+  {"pkg": "com.miui.msa.global", "name": "MIUI System Ads (MSA)", "tier": "safe", "why": "Serves ads inside Xiaomi system apps.", "breaks": "Nothing visible. If 'disable' is refused, shape removes it for this user instead (still reversible)."},
   {"pkg": "com.miui.systemAdSolution", "name": "MIUI System Ads (China ROM)", "tier": "safe", "why": "Ad service on China ROMs.", "breaks": "Nothing visible."},
   {"pkg": "com.miui.analytics", "name": "MIUI Analytics", "tier": "safe", "why": "Usage analytics sent to Xiaomi.", "breaks": "Nothing visible."},
   {"pkg": "com.miui.hybrid", "name": "Quick Apps", "tier": "safe", "why": "Instant mini-apps platform used mostly for promos.", "breaks": "Quick Apps."},
@@ -12,7 +12,7 @@
   {"pkg": "com.mi.android.globalminusscreen", "name": "App vault", "tier": "recommended", "why": "Feed panel left of the home screen.", "breaks": "App vault panel."},
   {"pkg": "com.miui.android.fashiongallery", "name": "Wallpaper carousel (Glance)", "tier": "recommended", "why": "Rotating lock-screen wallpapers with ads.", "breaks": "Wallpaper carousel."},
   {"pkg": "com.miui.miservice", "name": "Services & feedback", "tier": "recommended", "why": "Support and promo app.", "breaks": "Services & feedback app."},
-  {"pkg": "com.facemoji.lite.xiaomi", "name": "Facemoji keyboard", "tier": "recommended", "why": "Preinstalled keyboard with ads.", "breaks": "Facemoji. amos refuses this if it's your current keyboard."},
+  {"pkg": "com.facemoji.lite.xiaomi", "name": "Facemoji keyboard", "tier": "recommended", "why": "Preinstalled keyboard with ads.", "breaks": "Facemoji. shape refuses this if it's your current keyboard."},
   {"pkg": "com.mipay.wallet.in", "name": "Mi Pay (India)", "tier": "recommended", "why": "Payments app.", "breaks": "Mi Pay."},
   {"pkg": "com.xiaomi.joyose", "name": "Joyose", "tier": "optional", "why": "Performance profiles and telemetry for games.", "breaks": "Some users report lower game performance without it."},
   {"pkg": "com.miui.videoplayer", "name": "Mi Video", "tier": "optional", "why": "Video player with promos.", "breaks": "Mi Video."},

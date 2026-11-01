@@ -1,4 +1,4 @@
-"""`python3 -m amos <command>` — the only way the agent should change a phone."""
+"""`python3 -m shape <command>` — the only way the agent should change a phone."""
 
 from __future__ import annotations
 
@@ -61,7 +61,7 @@ def _init(dev: Device, ps: PhoneState) -> None:
 
 def cmd_doctor(args) -> int:
     ok = True
-    print("amos %s, Python %s" % (__version__, sys.version.split()[0]))
+    print("shape %s, Python %s" % (__version__, sys.version.split()[0]))
     try:
         adb = find_adb()
         print("  adb          %s" % adb)
@@ -84,10 +84,10 @@ def cmd_doctor(args) -> int:
     prof = probe.profile(dev)
     print("  model        %s %s, Android %s (SDK %s), %s" % (prof["manufacturer"], prof["model"], prof["android"], prof["sdk"], prof["skin"]))
     if prof["sdk"] < 26:
-        print("  !            The amos launcher needs Android 8 or newer. Cleanup still works.")
+        print("  !            The Shape launcher needs Android 8 or newer. Cleanup still works.")
         ok = False
     ps = PhoneState(dev)
-    print("  data         %s%s" % (ps.dir, "" if ps.exists else "  (not initialised — run: amos init)"))
+    print("  data         %s%s" % (ps.dir, "" if ps.exists else "  (not initialised — run: shape init)"))
     if lz.is_installed(dev):
         try:
             st = lz.status(dev)
@@ -130,7 +130,7 @@ def cmd_init(args) -> int:
         now = probe.profile(dev)
         print("Already set up: %s" % ps.dir)
         if prof.get("build") != now["build"]:
-            print("  The phone's software changed since last time (%s → %s). Check: amos drift" % (prof.get("build"), now["build"]))
+            print("  The phone's software changed since last time (%s → %s). Check: shape drift" % (prof.get("build"), now["build"]))
             prof.update({k: now[k] for k in ("android", "sdk", "skin", "build", "security_patch")})
             write_json(ps.path("profile.json"), prof)
         return 0
@@ -206,7 +206,7 @@ def cmd_plan(args) -> int:
         print("  %-8s %-44s   loses: %s" % ("", "", a["breaks"]))
     for b in plan["blocked"]:
         print("  keep     %-44s %s" % (b["pkg"], b["reason"]))
-    print("\nEverything here is reversible. Apply with: python3 -m amos apply %s --yes" % path)
+    print("\nEverything here is reversible. Apply with: python3 -m shape apply %s --yes" % path)
     return 0
 
 
@@ -219,7 +219,7 @@ def cmd_apply(args) -> int:
     if not confirm("Apply them?", args.yes):
         return 2
     summary = plans.apply_plan(dev, ps, plan, "plan:%s" % Path(args.plan).name)
-    print("\n%d applied, %d skipped, %d failed, %d blocked. Undo all: python3 -m amos restore" % (
+    print("\n%d applied, %d skipped, %d failed, %d blocked. Undo all: python3 -m shape restore" % (
         len(summary["applied"]), len(summary["skipped"]), len(summary["failed"]), len(summary["blocked"])))
     return 0 if not summary["failed"] else 1
 
@@ -304,7 +304,7 @@ def cmd_undo(args) -> int:
     else:
         targets = [log.get(i) for i in args.ids]
         if None in targets:
-            print("Unknown change id. See: amos changes")
+            print("Unknown change id. See: shape changes")
             return 2
     ok = True
     for c in sorted(targets, key=lambda c: c.id, reverse=True):
@@ -348,12 +348,12 @@ def cmd_drift(args) -> int:
         out(items)
         return 0
     if not items:
-        print("Everything amos changed is still in place.")
+        print("Everything shape changed is still in place.")
         return 0
     print("%d change(s) were undone by the phone (often after a system update):" % len(items))
     for d in items:
         print("  #%-4d %-16s %-44s now %s, should be %s" % (d["id"], d["kind"], d["target"], d["now"], d["expected"]))
-    print("Re-apply with: python3 -m amos reapply --yes")
+    print("Re-apply with: python3 -m shape reapply --yes")
     return 0
 
 
@@ -415,7 +415,7 @@ def cmd_report(args) -> int:
     print("Active changes: %d  %s" % (rep["changes_active"], ", ".join("%s×%d" % kv for kv in rep["changes_by_kind"].items())))
     if rep["launcher"]:
         print("Launcher: %s" % rep["launcher"])
-    print("Undo everything: python3 -m amos restore   (or sh %s)" % ps.path("restore.sh"))
+    print("Undo everything: python3 -m shape restore   (or sh %s)" % ps.path("restore.sh"))
     return 0
 
 
@@ -444,7 +444,7 @@ def _load_cfg(path: str) -> dict:
 def cmd_l_install(args) -> int:
     dev = get_dev(args)
     if dev.sdk < 26:
-        print("The amos launcher needs Android 8 or newer.")
+        print("The Shape launcher needs Android 8 or newer.")
         return 2
     ps = ensure_init(dev)
     lz.install(dev, ps, args.apk, make_default=not args.no_default)
@@ -535,7 +535,7 @@ def cmd_l_push(args) -> int:
     if not confirm("Push it to the phone?", args.yes):
         return 2
     h, c = lz.push(dev, ps, cfg)
-    print("Pushed (#%d, config %s). Undo: python3 -m amos launcher rollback" % (c.id, h))
+    print("Pushed (#%d, config %s). Undo: python3 -m shape launcher rollback" % (c.id, h))
     return 0
 
 
@@ -574,7 +574,7 @@ def cmd_l_rollback(args) -> int:
 def cmd_l_uninstall(args) -> int:
     dev = get_dev(args)
     ps = ensure_init(dev, quiet=True)
-    if not confirm("Give the home screen back to the previous launcher and remove amos?", args.yes):
+    if not confirm("Give the home screen back to the previous launcher and remove Shape?", args.yes):
         return 2
     lz.uninstall(dev, ps)
     plans.write_restore(ps)
@@ -584,9 +584,9 @@ def cmd_l_uninstall(args) -> int:
 # -- parser ------------------------------------------------------------------
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="amos", description="Shape an Android phone with an AI agent — every change reversible.")
+    p = argparse.ArgumentParser(prog="shape", description="Shape an Android phone with an AI agent — every change reversible.")
     p.add_argument("--device", "-d", help="adb serial (when several phones are connected)")
-    p.add_argument("--version", action="version", version="amos " + __version__)
+    p.add_argument("--version", action="version", version="shape " + __version__)
     sub = p.add_subparsers(dest="cmd", required=True)
 
     def add(name, fn, help_):
@@ -635,7 +635,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("action", choices=["disable", "remove", "enable"])
     sp.add_argument("packages", nargs="+")
     sp.add_argument("--yes", action="store_true")
-    sp = add("keep", cmd_keep, "packages amos must never touch on this phone")
+    sp = add("keep", cmd_keep, "packages shape must never touch on this phone")
     sp.add_argument("packages", nargs="+")
     sp.add_argument("--remove", action="store_true")
     sp = add("changes", cmd_changes, "list changes")
@@ -656,7 +656,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp = add("prefs", cmd_prefs, "show the owner's preferences file")
     sp.add_argument("--path", action="store_true")
 
-    lp = sub.add_parser("launcher", help="the amos home screen").add_subparsers(dest="lcmd", required=True)
+    lp = sub.add_parser("launcher", help="the Shape home screen").add_subparsers(dest="lcmd", required=True)
 
     def ladd(name, fn, help_):
         sp = lp.add_parser(name, help=help_)
@@ -666,7 +666,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp = ladd("install", cmd_l_install, "install the launcher and make it the home screen")
     sp.add_argument("--apk")
     sp.add_argument("--no-default", action="store_true")
-    ladd("default", cmd_l_default, "make amos the home screen")
+    ladd("default", cmd_l_default, "make Shape the home screen")
     ladd("status", cmd_l_status, "launcher version, config, active rules")
     sp = ladd("apps", cmd_l_apps, "installed apps with their names")
     sp.add_argument("--json", action="store_true")
@@ -684,7 +684,7 @@ def build_parser() -> argparse.ArgumentParser:
     ladd("history", cmd_l_history, "every config pushed to this phone")
     sp = ladd("rollback", cmd_l_rollback, "go back to an earlier config")
     sp.add_argument("to", nargs="?", help="history name/prefix, or -N (default -1)")
-    sp = ladd("uninstall", cmd_l_uninstall, "restore the previous launcher and remove amos")
+    sp = ladd("uninstall", cmd_l_uninstall, "restore the previous launcher and remove Shape")
     sp.add_argument("--yes", action="store_true")
     return p
 

@@ -19,5 +19,5 @@
   {"pkg": "com.google.android.apps.wellbeing", "name": "Digital Wellbeing", "tier": "optional", "why": "Screen-time stats and focus mode.", "breaks": "Screen-time dashboard, Bedtime and Focus modes."},
   {"pkg": "com.google.android.apps.turbo", "name": "Device Health Services", "tier": "optional", "why": "Battery-life predictions and adaptive battery.", "breaks": "Battery remaining-time estimates; adaptive battery may work worse."},
   {"pkg": "com.google.android.projection.gearhead", "name": "Android Auto", "tier": "optional", "why": "Car integration.", "breaks": "Android Auto in your car."},
-  {"pkg": "com.android.chrome", "name": "Chrome", "tier": "optional", "why": "Browser.", "breaks": "Chrome. amos refuses this if Chrome is your WebView provider."}
+  {"pkg": "com.android.chrome", "name": "Chrome", "tier": "optional", "why": "Browser.", "breaks": "Chrome. shape refuses this if Chrome is your WebView provider."}
 ]

@@ -1,8 +1,8 @@
 """Scan for bloat, write reviewable plans, and apply them.
 
-A plan is a JSON file with a list of actions. `amos plan` writes one for
+A plan is a JSON file with a list of actions. `shape plan` writes one for
 debloating; the agent may also write or edit plans by hand (e.g. drop a line
-the owner wants to keep). `amos apply` runs any plan through the safety guard
+the owner wants to keep). `shape apply` runs any plan through the safety guard
 and the change log.
 
 Action shapes:
@@ -113,7 +113,7 @@ def make_debloat_plan(dev: Device, ps: PhoneState, tier: str, include: List[str]
                         "why": e.get("why", ""), "breaks": e.get("breaks", "")})
     return {"kind": "debloat", "created": now_iso(), "device": ps.key, "tier": tier,
             "actions": actions, "blocked": blocked,
-            "how_to_review": "Remove any action the owner wants to keep, then: python3 -m amos apply <this file> --yes"}
+            "how_to_review": "Remove any action the owner wants to keep, then: python3 -m shape apply <this file> --yes"}
 
 
 def save_plan(ps: PhoneState, plan: dict) -> str:
@@ -174,7 +174,7 @@ def apply_plan(dev: Device, ps: PhoneState, plan: dict, source: str, echo=print)
                 echo("  (disable refused, removed for this user instead)")
         if res.status == "applied":
             summary["applied"].append({"action": a, "change": res.change.id})
-            echo("  done     %s  (#%d, undo: amos undo %d)" % (label, res.change.id, res.change.id))
+            echo("  done     %s  (#%d, undo: shape undo %d)" % (label, res.change.id, res.change.id))
         elif res.status == "skipped":
             summary["skipped"].append({"action": a, "reason": res.message})
             echo("  skip     %s — %s" % (label, res.message))

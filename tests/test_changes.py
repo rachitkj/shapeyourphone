@@ -3,7 +3,7 @@ import unittest
 
 from helpers import PhoneTest
 
-from amos import changes as ch
+from shape import changes as ch
 
 
 class ChangeRoundTrips(PhoneTest):

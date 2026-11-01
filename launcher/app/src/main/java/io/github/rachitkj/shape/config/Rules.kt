@@ -1,10 +1,10 @@
-package io.github.rachitkj.amos.config
+package io.github.rachitkj.shape.config
 
 import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * Time rules. Must match amos/launcher_config.py exactly — both run
+ * Time rules. Must match shape/launcher_config.py exactly — both run
  * tests/vectors/rules.json.
  *
  * A rule is active on its `days` (default: every day) between `from` and `to`

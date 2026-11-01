@@ -1,4 +1,4 @@
-package io.github.rachitkj.amos
+package io.github.rachitkj.shape
 
 import android.content.ComponentName
 import android.content.Context
@@ -22,7 +22,7 @@ import android.os.Process
 import android.os.UserHandle
 import android.provider.MediaStore
 import android.util.LruCache
-import io.github.rachitkj.amos.config.IconStyle
+import io.github.rachitkj.shape.config.IconStyle
 
 class AppEntry(val info: LauncherActivityInfo) {
     val pkg: String get() = info.componentName.packageName

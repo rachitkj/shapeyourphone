@@ -1,4 +1,4 @@
-package io.github.rachitkj.amos
+package io.github.rachitkj.shape
 
 import android.content.Context
 import android.graphics.Typeface
@@ -9,10 +9,10 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import io.github.rachitkj.amos.config.Align
-import io.github.rachitkj.amos.config.IconStyle
-import io.github.rachitkj.amos.config.TextColor
-import io.github.rachitkj.amos.config.Theme
+import io.github.rachitkj.shape.config.Align
+import io.github.rachitkj.shape.config.IconStyle
+import io.github.rachitkj.shape.config.TextColor
+import io.github.rachitkj.shape.config.Theme
 import kotlin.math.roundToInt
 
 fun Context.dp(v: Number): Int = (v.toFloat() * resources.displayMetrics.density).roundToInt()

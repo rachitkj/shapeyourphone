@@ -29,7 +29,7 @@ TWEAKS = {
 def actions_for(dev: Device, name: str, args: List[str]) -> List[dict]:
     def need(n: int) -> None:
         if len(args) < n:
-            raise ValueError("usage: amos tweak " + TWEAKS.get(name, name))
+            raise ValueError("usage: shape tweak " + TWEAKS.get(name, name))
 
     if name == "animations":
         need(1)

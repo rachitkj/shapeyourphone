@@ -1,4 +1,4 @@
-package io.github.rachitkj.amos
+package io.github.rachitkj.shape
 
 import android.content.ContentProvider
 import android.content.ContentValues
@@ -9,14 +9,14 @@ import android.os.Binder
 import android.os.Bundle
 import android.os.Process
 import android.util.Base64
-import io.github.rachitkj.amos.config.ConfigParser
-import io.github.rachitkj.amos.config.Rules
+import io.github.rachitkj.shape.config.ConfigParser
+import io.github.rachitkj.shape.config.Rules
 import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * Control channel for the amos CLI:
- *   adb shell content call --uri content://io.github.rachitkj.amos.control --method ping
+ * Control channel for the shape CLI:
+ *   adb shell content call --uri content://io.github.rachitkj.shape.control --method ping
  *
  * Only the adb shell user (uid 2000) and root may call it, so no other app on
  * the phone can read or rewrite the home screen. Free text in replies is
@@ -29,7 +29,7 @@ class ControlProvider : ContentProvider() {
     override fun call(method: String, arg: String?, extras: Bundle?): Bundle? {
         val uid = Binder.getCallingUid()
         if (uid != SHELL_UID && uid != ROOT_UID && uid != Process.myUid()) {
-            throw SecurityException("amos control is only available over adb")
+            throw SecurityException("Shape control is only available over adb")
         }
         val ctx = context ?: return error("launcher not ready")
         return try {

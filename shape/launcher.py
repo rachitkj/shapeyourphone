@@ -1,4 +1,4 @@
-"""Install and drive the amos launcher on the phone.
+"""Install and drive the Shape launcher on the phone.
 
 The launcher exposes a ContentProvider that only answers callers running as
 the adb shell user (uid 2000) or root. We talk to it with `content call`:
@@ -41,7 +41,7 @@ def _parse_bundle(out: str) -> Dict[str, str]:
     m = re.search(r"Result: Bundle\[\{(.*)\}\]", out, re.S)
     if not m:
         if "Unknown authority" in out or "Could not find provider" in out or "Unknown URL" in out:
-            raise LauncherError("The amos launcher is not installed (or not set up yet). Run: python3 -m amos launcher install")
+            raise LauncherError("The Shape launcher is not installed (or not set up yet). Run: python3 -m shape launcher install")
         if "SecurityException" in out:
             raise LauncherError("The launcher refused the call: " + out.strip().splitlines()[-1])
         raise LauncherError("Unexpected reply from launcher: " + (out.strip()[:300] or "(empty)"))
@@ -143,7 +143,7 @@ def push(dev: Device, ps: PhoneState, cfg: dict, source: str = "launcher push") 
     except LauncherError:
         before = None
     log = ch.ChangeLog(ps)
-    # history: keep what was there before the first amos push, then every pushed version
+    # history: keep what was there before the first shape push, then every pushed version
     hd = history_dir(ps)
     if before is not None and not history(ps):
         write_json(hd / ("%s-before.json" % now_ts()), before)
@@ -176,7 +176,7 @@ def rollback(dev: Device, ps: PhoneState, to: Optional[str] = None) -> Tuple[str
     else:
         matches = [hh for hh in hist if hh[0].startswith(to)]
         if not matches:
-            raise LauncherError("no history entry starts with %r (see: amos launcher history)" % to)
+            raise LauncherError("no history entry starts with %r (see: shape launcher history)" % to)
         target = matches[-1]
     h, _ = push(dev, ps, target[1], source="launcher rollback %s" % target[0])
     return target[0], h
@@ -212,14 +212,14 @@ def find_local_apk() -> Optional[str]:
 
 
 def download_release_apk() -> str:
-    dest = Path(tempfile.gettempdir()) / "amos-launcher.apk"
+    dest = Path(tempfile.gettempdir()) / "shape-launcher.apk"
     try:
         urllib.request.urlretrieve(LAUNCHER_RELEASE_URL, str(dest))
     except Exception as e:  # noqa: BLE001 — surface any network error plainly
         raise LauncherError(
             "Couldn't download the launcher from %s (%s).\n"
             "Build it instead: cd launcher && ./gradlew assembleDebug  (needs JDK 17+ and the Android SDK),\n"
-            "or pass --apk /path/to/amos-launcher.apk" % (LAUNCHER_RELEASE_URL, e)
+            "or pass --apk /path/to/shape-launcher.apk" % (LAUNCHER_RELEASE_URL, e)
         )
     return str(dest)
 
@@ -240,14 +240,14 @@ def install(dev: Device, ps: PhoneState, apk: Optional[str], make_default: bool 
         return rc == 0 and "Success" in out, (out + err).strip()
 
     op = ch.Op("app.install", LAUNCHER_PACKAGE, "installed" if already else "absent", "installed",
-               "adb install -r amos-launcher.apk", quote(["pm", "uninstall", LAUNCHER_PACKAGE]) if not already else "",
-               "amos launcher", host_do=host_install)
+               "adb install -r shape-launcher.apk", quote(["pm", "uninstall", LAUNCHER_PACKAGE]) if not already else "",
+               "Shape launcher", host_do=host_install)
     if already:
         # reinstall/upgrade: run it, but don't log a second install change
         ok, msg = host_install()
         if not ok:
             raise LauncherError("install failed: " + msg)
-        echo("  updated  amos launcher")
+        echo("  updated  Shape launcher")
     else:
         r = ch.execute(dev, log, op, "launcher install")
         if r.status != "applied":
@@ -256,7 +256,7 @@ def install(dev: Device, ps: PhoneState, apk: Optional[str], make_default: bool 
                 hint = "\n  Xiaomi/POCO: turn on 'Install via USB' in Developer options (needs a Mi account), then retry."
             raise LauncherError("install failed: %s%s" % (r.message, hint))
         results.append(r)
-        echo("  done     installed amos launcher (#%d)" % r.change.id)
+        echo("  done     installed the Shape launcher (#%d)" % r.change.id)
     if make_default:
         r = set_default(dev, ps, echo)
         if r:
@@ -266,22 +266,22 @@ def install(dev: Device, ps: PhoneState, apk: Optional[str], make_default: bool 
 
 def set_default(dev: Device, ps: PhoneState, echo=print) -> Optional[ch.Result]:
     log = ch.ChangeLog(ps)
-    op = ch.op_home(dev, LAUNCHER_HOME_ACTIVITY, "make amos the home screen")
+    op = ch.op_home(dev, LAUNCHER_HOME_ACTIVITY, "make Shape the home screen")
     r = ch.execute(dev, log, op, "launcher default")
     if r.status == "applied":
-        echo("  done     amos is now the home screen (#%d). Previous: %s" % (r.change.id, op.before))
+        echo("  done     Shape is now the home screen (#%d). Previous: %s" % (r.change.id, op.before))
         return r
     if r.status == "skipped":
-        echo("  skip     amos is already the home screen")
+        echo("  skip     Shape is already the home screen")
         return r
     echo("  This phone didn't let adb switch the home app. Opening the picker on the phone —\n"
-         "  tap 'amos' there. (Settings → Apps → Default apps → Home app)")
+         "  tap 'Shape' there. (Settings → Apps → Default apps → Home app)")
     dev.shell("am", "start", "-a", "android.settings.HOME_SETTINGS")
     return r
 
 
 def uninstall(dev: Device, ps: PhoneState, echo=print) -> None:
-    """Hand the home screen back to the previous launcher, then remove amos."""
+    """Hand the home screen back to the previous launcher, then remove Shape."""
     log = ch.ChangeLog(ps)
     homes = [c for c in log.applied() if c.kind == "home" and c.target.split("/")[0] == LAUNCHER_PACKAGE]
     for c in reversed(homes):
@@ -293,7 +293,7 @@ def uninstall(dev: Device, ps: PhoneState, echo=print) -> None:
     inst = [c for c in log.applied() if c.kind == "app.install" and c.target == LAUNCHER_PACKAGE]
     for c in reversed(inst):
         res = ch.undo_change(dev, log, c)
-        echo("  %s uninstalled amos launcher" % ("done    " if res.status == "applied" else "FAILED  "))
+        echo("  %s uninstalled the Shape launcher" % ("done    " if res.status == "applied" else "FAILED  "))
     if not inst and is_installed(dev):
         dev.shell("pm", "uninstall", LAUNCHER_PACKAGE)
-        echo("  done     uninstalled amos launcher")
+        echo("  done     uninstalled the Shape launcher")

@@ -1,4 +1,4 @@
-# agentic-mobile-os
+# shapeyourphone
 
 Your Android phone, shaped by an AI agent. Not a custom ROM, and no root needed.
 It runs on the Android you already have, over adb, and **every change can be undone**.
@@ -22,7 +22,7 @@ last one instead of starting over.
 2. On the phone, tap Settings → About phone → Build number 7 times, then turn on Developer options → USB debugging. Plug the phone in and tap Allow.
 3. Clone this repo, open it in your coding agent, and say: **"Follow PROMPT.md"**.
 
-Or drive it yourself: `python3 -m amos --help`.
+Or drive it yourself: `python3 -m shape --help`.
 
 ## What it does
 
@@ -49,7 +49,7 @@ It can't change the status bar, quick settings or lock screen, and it can't remo
 
 ## Layout
 ```
-amos/          Python toolkit (stdlib only)        PROMPT.md   the agent's playbook
+shape/         Python toolkit (stdlib only)        PROMPT.md   the agent's playbook
 data/          bloat lists + protected packages    docs/       launcher config reference
 launcher/      Android launcher (Kotlin)           config/     default + example home screens
 tests/         fake-phone tests + shared vectors   scripts/    release signing setup
@@ -58,6 +58,6 @@ tests/         fake-phone tests + shared vectors   scripts/    release signing s
 ## Developing
 - Python: `python3 -m unittest discover -s tests -t tests`
 - Launcher: `cd launcher && ./gradlew testDebugUnitTest assembleDebug` (JDK 17+ and the Android SDK)
-- Releases: run `scripts/make-release-key.sh` once, then `git tag v0.1.0 && git push origin v0.1.0`. CI builds a signed `amos-launcher.apk`, and `amos launcher install` downloads it.
+- Releases: run `scripts/make-release-key.sh` once, then `git tag v0.1.0 && git push origin v0.1.0`. CI builds a signed `shape-launcher.apk`, and `shape launcher install` downloads it.
 
 Inspired by [cleanyourtv](https://github.com/Gathin23/cleanyourtv). MIT licensed.

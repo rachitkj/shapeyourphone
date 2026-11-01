@@ -1,4 +1,4 @@
-package io.github.rachitkj.amos
+package io.github.rachitkj.shape
 
 import android.content.Context
 import android.graphics.drawable.GradientDrawable
@@ -18,10 +18,10 @@ import android.widget.GridView
 import android.widget.LinearLayout
 import android.widget.ListView
 import android.widget.TextView
-import io.github.rachitkj.amos.config.Align
-import io.github.rachitkj.amos.config.AppsStyle
-import io.github.rachitkj.amos.config.Colors
-import io.github.rachitkj.amos.config.Config
+import io.github.rachitkj.shape.config.Align
+import io.github.rachitkj.shape.config.AppsStyle
+import io.github.rachitkj.shape.config.Colors
+import io.github.rachitkj.shape.config.Config
 
 /** Full-screen app list with search. Hidden apps never appear; search-only apps appear only when searched. */
 class DrawerView(

@@ -1,4 +1,4 @@
-package io.github.rachitkj.amos.config
+package io.github.rachitkj.shape.config
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -9,7 +9,7 @@ import java.io.File
 
 class ConfigParserTest {
     private val configDir: File by lazy {
-        File(System.getProperty("amos.vectors") ?: "../../tests/vectors/rules.json").parentFile.parentFile.parentFile.resolve("config")
+        File(System.getProperty("shape.vectors") ?: "../../tests/vectors/rules.json").parentFile.parentFile.parentFile.resolve("config")
     }
 
     @Test

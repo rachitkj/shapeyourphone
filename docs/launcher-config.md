@@ -1,10 +1,10 @@
 # Launcher config reference (v1)
 
-The amos launcher draws its whole home screen from one JSON file. The agent
-edits it, checks it with `amos launcher validate`, previews it with
-`amos launcher preview --at "fri 22:30"`, and sends it with
-`amos launcher push`. The phone redraws immediately, with no reinstall. Every
-pushed version is kept, so `amos launcher rollback` always works.
+The Shape launcher draws its whole home screen from one JSON file. The agent
+edits it, checks it with `shape launcher validate`, previews it with
+`shape launcher preview --at "fri 22:30"`, and sends it with
+`shape launcher push`. The phone redraws immediately, with no reinstall. Every
+pushed version is kept, so `shape launcher rollback` always works.
 
 Examples: [`config/default.json`](../config/default.json) and
 [`config/examples/`](../config/examples).
@@ -14,7 +14,7 @@ Examples: [`config/default.json`](../config/default.json) and
 | key | type | default | notes |
 |---|---|---|---|
 | `version` | `1` | required | |
-| `name` | string | | Shown in `amos launcher history`. |
+| `name` | string | | Shown in `shape launcher history`. |
 | `theme` | object | see below | |
 | `home` | list of widgets | clock + spacer | Drawn top to bottom. |
 | `dock` | object | dialer, SMS, browser, camera | Row of apps at the bottom. |
@@ -29,7 +29,7 @@ Wherever an app is expected you can use:
 - a specific activity: `"com.whatsapp/.Main"`
 - the phone's default app for a role: `"@dialer"`, `"@sms"`, `"@browser"`, `"@camera"`, `"@settings"`
 
-Use `amos launcher apps` to list installed apps with their names. Apps that
+Use `shape launcher apps` to list installed apps with their names. Apps that
 aren't installed are skipped quietly, and the validator warns about them.
 
 ## `theme`
@@ -54,7 +54,7 @@ aren't installed are skipped quietly, and the validator warns about them.
 | `spacer` | `height` (dp), or `flex` (share of leftover space, e.g. `1` pushes later widgets down) |
 | `apps` | `apps` (list), `style` (`list`/`grid`/`row`), `columns`, `labels`, `size`, `align` |
 | `search` | `hint`. Tapping it opens the drawer with the keyboard up. |
-| `calendar` | `hours` (how far ahead), `size`, `align`. Shows the next event. Needs `amos perm grant io.github.rachitkj.amos android.permission.READ_CALENDAR`. |
+| `calendar` | `hours` (how far ahead), `size`, `align`. Shows the next event. Needs `shape perm grant io.github.rachitkj.shape android.permission.READ_CALENDAR`. |
 
 `align` is `start`, `center` or `end`. Unknown widget types are skipped, so an
 older launcher keeps working with a newer config.
@@ -92,5 +92,5 @@ Defaults: swipe up opens the drawer, swipe down opens notifications, long press 
 - Active rules apply in list order, so later rules win.
 - The launcher checks rules every minute while visible and whenever you return home.
 
-These rules are implemented twice, in `amos/launcher_config.py` and in
+These rules are implemented twice, in `shape/launcher_config.py` and in
 `launcher/.../config/Rules.kt`. Both run `tests/vectors/rules.json` in CI.

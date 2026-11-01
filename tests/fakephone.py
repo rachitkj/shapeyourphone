@@ -1,7 +1,7 @@
-"""A stateful fake Android phone that answers the adb commands amos sends.
+"""A stateful fake Android phone that answers the adb commands shape sends.
 
 Not a full emulator — just enough of pm/settings/cmd/dumpsys/content to verify
-that every change amos makes is applied, verified, logged and undone correctly.
+that every change shape makes is applied, verified, logged and undone correctly.
 """
 
 from __future__ import annotations
@@ -12,7 +12,7 @@ import json
 import shlex
 from typing import Dict, List, Optional, Tuple
 
-LAUNCHER = "io.github.rachitkj.amos"
+LAUNCHER = "io.github.rachitkj.shape"
 AUTH = LAUNCHER + ".control"
 
 PROPS = {
@@ -109,7 +109,7 @@ class FakePhone:
         if args[:1] == ["-s"]:
             args = args[2:]
         if args[:1] == ["install"]:
-            self.pkgs[LAUNCHER] = {"system": False, "activity": ".HomeActivity", "label": "amos", "state": "enabled"}
+            self.pkgs[LAUNCHER] = {"system": False, "activity": ".HomeActivity", "label": "Shape", "state": "enabled"}
             if self.provider_config is None:
                 self.provider_config = json.dumps({"version": 1, "name": "Default"}, indent=2) + "\n"
             return 0, "Performing Streamed Install\nSuccess\n", ""

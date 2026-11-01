@@ -8,8 +8,8 @@ from unittest import mock
 
 from helpers import PhoneTest
 
-from amos import cli
-from amos import privacy
+from shape import cli
+from shape import privacy
 
 
 class Cli(PhoneTest):

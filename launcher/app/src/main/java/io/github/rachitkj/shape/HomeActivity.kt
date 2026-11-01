@@ -1,4 +1,4 @@
-package io.github.rachitkj.amos
+package io.github.rachitkj.shape
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -33,15 +33,15 @@ import android.widget.TextClock
 import android.widget.Toast
 import android.window.OnBackInvokedCallback
 import android.window.OnBackInvokedDispatcher
-import io.github.rachitkj.amos.config.Align
-import io.github.rachitkj.amos.config.AppsStyle
-import io.github.rachitkj.amos.config.Colors
-import io.github.rachitkj.amos.config.Config
-import io.github.rachitkj.amos.config.ConfigException
-import io.github.rachitkj.amos.config.ConfigParser
-import io.github.rachitkj.amos.config.Rules
-import io.github.rachitkj.amos.config.Theme
-import io.github.rachitkj.amos.config.Widget
+import io.github.rachitkj.shape.config.Align
+import io.github.rachitkj.shape.config.AppsStyle
+import io.github.rachitkj.shape.config.Colors
+import io.github.rachitkj.shape.config.Config
+import io.github.rachitkj.shape.config.ConfigException
+import io.github.rachitkj.shape.config.ConfigParser
+import io.github.rachitkj.shape.config.Rules
+import io.github.rachitkj.shape.config.Theme
+import io.github.rachitkj.shape.config.Widget
 import kotlin.math.abs
 
 class HomeActivity : Activity() {
@@ -184,7 +184,7 @@ class HomeActivity : Activity() {
         config = try {
             ConfigParser.parse(ConfigStore.read(this), day, minute)
         } catch (e: ConfigException) {
-            Toast.makeText(this, "amos: ${e.message} — using defaults", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Shape: ${e.message} — using defaults", Toast.LENGTH_LONG).show()
             ConfigParser.parse(ConfigStore.defaultText(this), day, minute)
         }
         activeKey = config?.activeRules?.joinToString("|") ?: ""

@@ -1,4 +1,4 @@
-package io.github.rachitkj.amos.config
+package io.github.rachitkj.shape.config
 
 import org.json.JSONArray
 import org.json.JSONObject

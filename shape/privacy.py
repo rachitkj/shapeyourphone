@@ -102,5 +102,5 @@ def audit(dev: Device) -> dict:
     return {"apps": apps, "special_access": special, "network": network,
             "notes": {
                 "special_access": "Accessibility services and notification listeners can read what is on screen / in notifications. Each one should be something the owner recognises.",
-                "fix": "Revoke with: python3 -m amos perm revoke <pkg> <permission>",
+                "fix": "Revoke with: python3 -m shape perm revoke <pkg> <permission>",
             }}

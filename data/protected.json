@@ -1,5 +1,5 @@
 {
-  "_comment": "Packages amos will never disable or remove, on any phone. Disabling these can bootloop the phone, break calls/SMS/data, break app installs, or break recents and gesture navigation. Additions welcome; removals need a very good reason.",
+  "_comment": "Packages shape will never disable or remove, on any phone. Disabling these can bootloop the phone, break calls/SMS/data, break app installs, or break recents and gesture navigation. Additions welcome; removals need a very good reason.",
   "packages": {
     "android": "the Android framework itself",
     "com.android.systemui": "status bar, notifications, navigation",
@@ -101,6 +101,6 @@
     "vendor.qti.": "Qualcomm radio and modem",
     "org.codeaurora.ims": "calling over Wi-Fi/LTE",
     "com.mediatek.": "MediaTek radio and modem",
-    "io.github.rachitkj.amos": "this project's launcher"
+    "io.github.rachitkj.shape": "this project's launcher"
   }
 }

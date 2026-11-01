@@ -1,4 +1,4 @@
-package io.github.rachitkj.amos.config
+package io.github.rachitkj.shape.config
 
 /** Colour parsing without android.graphics, so it runs in plain JVM unit tests. */
 object Colors {
