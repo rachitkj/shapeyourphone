@@ -1,0 +1,43 @@
+name: release
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: write
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: gradle/actions/wrapper-validation@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Check signing secrets
+        env:
+          KS: ${{ secrets.AMOS_KEYSTORE_B64 }}
+        run: |
+          if [ -z "$KS" ]; then
+            echo "::error::AMOS_KEYSTORE_B64 is not set. Run scripts/make-release-key.sh once to create the signing key and secrets."
+            exit 1
+          fi
+      - name: Build signed release APK
+        env:
+          AMOS_KEYSTORE_B64: ${{ secrets.AMOS_KEYSTORE_B64 }}
+          AMOS_KEYSTORE_PASSWORD: ${{ secrets.AMOS_KEYSTORE_PASSWORD }}
+          AMOS_KEY_ALIAS: ${{ secrets.AMOS_KEY_ALIAS }}
+          AMOS_KEY_PASSWORD: ${{ secrets.AMOS_KEY_PASSWORD }}
+        run: |
+          echo "$AMOS_KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/amos.jks"
+          export AMOS_KEYSTORE="$RUNNER_TEMP/amos.jks"
+          cd launcher && ./gradlew --no-daemon testReleaseUnitTest assembleRelease
+          cp app/build/outputs/apk/release/app-release.apk "$GITHUB_WORKSPACE/amos-launcher.apk"
+          sha256sum "$GITHUB_WORKSPACE/amos-launcher.apk" | tee "$GITHUB_WORKSPACE/amos-launcher.apk.sha256"
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" amos-launcher.apk amos-launcher.apk.sha256 \
+            --title "$GITHUB_REF_NAME" --generate-notes

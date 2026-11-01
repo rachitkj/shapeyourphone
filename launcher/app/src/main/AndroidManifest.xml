@@ -35,7 +35,8 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Amos">
+        android:theme="@style/Theme.Amos"
+        tools:ignore="DataExtractionRules,UnusedAttribute">
 
         <activity
             android:name=".HomeActivity"
