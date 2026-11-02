@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+- `shape launcher install` verifies the downloaded APK against the release's published SHA-256 and refuses a mismatch.
+- Launcher: long-press an app for its shortcuts (e.g. "New incognito tab") and App info; shortcuts respect the pause screen.
+- Launcher: work-profile apps appear in the drawer with the usual work badge.
+
 ## 0.1.0 — 2026-11-02
 
 First public version. Tested end to end on Android 8, 11, 14 and 16

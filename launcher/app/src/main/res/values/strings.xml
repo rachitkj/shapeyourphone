@@ -6,4 +6,5 @@
     <string name="pause_opening">Opening %1$s</string>
     <string name="pause_open">Open %1$s</string>
     <string name="pause_not_now">Not now</string>
+    <string name="app_info">App info</string>
 </resources>

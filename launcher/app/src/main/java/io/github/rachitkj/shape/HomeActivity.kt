@@ -29,6 +29,7 @@ import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import android.widget.PopupMenu
 import android.widget.TextClock
 import android.widget.Toast
 import android.window.OnBackInvokedCallback
@@ -43,6 +44,8 @@ import io.github.rachitkj.shape.config.Rules
 import io.github.rachitkj.shape.config.Theme
 import io.github.rachitkj.shape.config.Widget
 import kotlin.math.abs
+
+private const val MENU_APP_INFO = 1000
 
 class HomeActivity : Activity() {
 
@@ -86,7 +89,7 @@ class HomeActivity : Activity() {
         }
         home.addView(widgets, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
         home.addView(dock, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT))
-        drawer = DrawerView(this, apps, ::launch, ::appInfo)
+        drawer = DrawerView(this, apps, ::launch, ::appMenu)
         root.addView(home, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
         root.addView(drawer, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
         pause = PauseView(this)
@@ -342,7 +345,7 @@ class HomeActivity : Activity() {
         h.root.contentDescription = label(e, c)
         h.root.setOnClickListener { launch(e, it) }
         h.root.setOnLongClickListener {
-            appInfo(e)
+            appMenu(e, it)
             true
         }
     }
@@ -391,16 +394,45 @@ class HomeActivity : Activity() {
         }
     }
 
-    private fun launch(e: AppEntry, from: View) {
+    private fun launch(e: AppEntry, from: View) = guarded(e) { start(e, from) }
+
+    /** Run [open] for [e], but show the pause screen first if the owner asked for one for this app. */
+    private fun guarded(e: AppEntry, open: () -> Unit) {
         val c = config
         if (c != null && e.pkg in pausePkgs && !pause.isOpen) {
             pause.show(c.theme, label(e, c), c.pause.seconds, c.pause.message,
-                open = { closeOverlays(); start(e, from) },
+                open = { closeOverlays(); open() },
                 dismiss = { closeOverlays() })
             updateBackCallback()
             return
         }
-        start(e, from)
+        open()
+    }
+
+    /** Long-press: the app's own shortcuts (e.g. "New incognito tab"), then App info. */
+    private fun appMenu(e: AppEntry, anchor: View) {
+        val shortcuts = apps.shortcuts(e)
+        val menu = PopupMenu(this, anchor)
+        shortcuts.forEachIndexed { i, s -> menu.menu.add(0, i, i, s.shortLabel ?: s.id) }
+        menu.menu.add(1, MENU_APP_INFO, 100, R.string.app_info)
+        menu.setOnMenuItemClickListener { item ->
+            if (item.itemId == MENU_APP_INFO) {
+                appInfo(e)
+            } else {
+                shortcuts.getOrNull(item.itemId)?.let { s ->
+                    guarded(e) {
+                        try {
+                            val loc = IntArray(2).also { anchor.getLocationOnScreen(it) }
+                            apps.startShortcut(s, Rect(loc[0], loc[1], loc[0] + anchor.width, loc[1] + anchor.height))
+                        } catch (_: Exception) {
+                            Toast.makeText(this, "Can't open that shortcut", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+            true
+        }
+        menu.show()
     }
 
     private fun start(e: AppEntry, from: View) {

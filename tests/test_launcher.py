@@ -82,6 +82,26 @@ class LauncherFlow(PhoneTest):
             lz.status(self.dev)
         self.assertIn("not installed", str(e.exception))
 
+    def test_release_download_is_checksum_verified(self):
+        import hashlib, io
+        from unittest import mock
+        good = b"signed apk bytes"
+
+        def fake_retrieve(url, path):
+            open(path, "wb").write(good)
+
+        def sums(digest):
+            return mock.patch.object(lz.urllib.request, "urlopen",
+                                     return_value=io.BytesIO(("%s  shape-launcher.apk\n" % digest).encode()))
+        with mock.patch.object(lz.urllib.request, "urlretrieve", side_effect=fake_retrieve):
+            with sums(hashlib.sha256(good).hexdigest()):
+                path = lz.download_release_apk()
+                self.assertEqual(open(path, "rb").read(), good)
+            with sums("0" * 64):
+                with self.assertRaises(lz.LauncherError) as e:
+                    lz.download_release_apk()
+                self.assertIn("checksum", str(e.exception))
+
     def test_list_apps_has_labels(self):
         self.install()
         apps = {a["package"]: a["label"] for a in lz.list_apps(self.dev)}

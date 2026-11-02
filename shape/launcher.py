@@ -221,15 +221,23 @@ def find_local_apk() -> Optional[str]:
 
 
 def download_release_apk() -> str:
-    dest = Path(tempfile.gettempdir()) / "shape-launcher.apk"
+    """Download the signed release APK and verify it against the published SHA-256."""
+    dest = Path(tempfile.mkdtemp(prefix="shape-release-")) / "shape-launcher.apk"
     try:
         urllib.request.urlretrieve(LAUNCHER_RELEASE_URL, str(dest))
+        with urllib.request.urlopen(LAUNCHER_RELEASE_URL + ".sha256", timeout=30) as r:
+            expected = r.read().decode("utf-8", "replace").split()[0].lower()
     except Exception as e:  # noqa: BLE001 — surface any network error plainly
         raise LauncherError(
             "Couldn't download the launcher from %s (%s).\n"
             "Build it instead: cd launcher && ./gradlew assembleDebug  (needs JDK 17+ and the Android SDK),\n"
             "or pass --apk /path/to/shape-launcher.apk" % (LAUNCHER_RELEASE_URL, e)
         )
+    actual = hashlib.sha256(dest.read_bytes()).hexdigest()
+    if actual != expected:
+        dest.unlink()
+        raise LauncherError("The downloaded launcher doesn't match its published checksum (got %s, expected %s). "
+                            "Not installing it. Try again later or pass --apk." % (actual[:16], expected[:16]))
     return str(dest)
 
 

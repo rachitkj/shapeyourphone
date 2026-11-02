@@ -1,5 +1,9 @@
 # shapeyourphone
 
+[![ci](https://github.com/rachitkj/shapeyourphone/actions/workflows/ci.yml/badge.svg)](https://github.com/rachitkj/shapeyourphone/actions/workflows/ci.yml)
+[![release](https://img.shields.io/github/v/release/rachitkj/shapeyourphone)](https://github.com/rachitkj/shapeyourphone/releases/latest)
+[![license](https://img.shields.io/github/license/rachitkj/shapeyourphone)](LICENSE)
+
 Your Android phone, shaped by an AI agent. Not a custom ROM, and no root needed.
 It runs on the Android you already have, over adb, and **every change can be undone**.
 
@@ -40,6 +44,11 @@ MCP config (Claude Desktop → Settings → Developer → Edit Config):
 ```
 Every tool that changes the phone returns a preview first, and only acts when
 called again with `owner_approved: true`.
+
+The Shape launcher installs itself when you ask for it (`shape launcher install`
+downloads the signed APK from [Releases](https://github.com/rachitkj/shapeyourphone/releases/latest)
+and checks it). You can also grab
+[`shape-launcher.apk`](https://github.com/rachitkj/shapeyourphone/releases/latest/download/shape-launcher.apk) directly.
 
 ## What a session looks like
 ```

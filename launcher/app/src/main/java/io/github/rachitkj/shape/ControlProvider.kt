@@ -94,7 +94,7 @@ class ControlProvider : ContentProvider() {
     private fun appsJson(ctx: Context): String {
         val arr = JSONArray()
         for (a in AppRepository(ctx).load()) {
-            arr.put(JSONObject().put("package", a.pkg).put("activity", a.component.className).put("label", a.label))
+            arr.put(JSONObject().put("package", a.pkg).put("activity", a.component.className).put("label", a.label).put("work", a.isWork))
         }
         return arr.toString()
     }
@@ -106,7 +106,7 @@ class ControlProvider : ContentProvider() {
         val end = System.currentTimeMillis()
         val stats = usm.queryAndAggregateUsageStats(end - days.coerceIn(1, 365) * 86_400_000L, end)
         val arr = JSONArray()
-        for (a in AppRepository(ctx).load().distinctBy { it.pkg }) {
+        for (a in AppRepository(ctx).load().filter { !it.isWork }.distinctBy { it.pkg }) {
             val s = stats[a.pkg]
             arr.put(
                 JSONObject().put("package", a.pkg).put("label", a.label)

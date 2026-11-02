@@ -28,7 +28,7 @@ class DrawerView(
     context: Context,
     private val apps: AppRepository,
     private val onLaunch: (AppEntry, View) -> Unit,
-    private val onInfo: (AppEntry) -> Unit,
+    private val onMenu: (AppEntry, View) -> Unit,
 ) : FrameLayout(context) {
 
     private val column = LinearLayout(context).apply { orientation = LinearLayout.VERTICAL }
@@ -103,8 +103,8 @@ class DrawerView(
             v.isVerticalScrollBarEnabled = false
             v.selector = android.graphics.drawable.ColorDrawable(0)
             v.setOnItemClickListener { _, view, pos, _ -> shown.getOrNull(pos)?.let { onLaunch(it, view) } }
-            v.setOnItemLongClickListener { _, _, pos, _ ->
-                shown.getOrNull(pos)?.let { onInfo(it) }
+            v.setOnItemLongClickListener { _, view, pos, _ ->
+                shown.getOrNull(pos)?.let { onMenu(it, view) }
                 true
             }
             column.addView(v, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
