@@ -51,8 +51,8 @@ jobs:
           distribution: temurin
           java-version: "17"
       - uses: gradle/actions/setup-gradle@v6
-      - name: Unit tests, lint, debug APK
-        run: ./gradlew --no-daemon testDebugUnitTest lintDebug assembleDebug
+      - name: Unit tests, lint, debug APK, release build (unsigned, R8)
+        run: ./gradlew --no-daemon testDebugUnitTest lintDebug assembleDebug assembleRelease
       - uses: actions/upload-artifact@v7
         if: always()
         with:

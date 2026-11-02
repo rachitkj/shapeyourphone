@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0 — unreleased
+## 0.1.0 — 2026-11-02
 
 First public version. Tested end to end on Android 8, 11, 14 and 16
 emulators in CI. **Not yet tested on physical phones.** Device reports are very welcome.
